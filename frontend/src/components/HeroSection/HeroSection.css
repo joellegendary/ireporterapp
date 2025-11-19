@@ -1,0 +1,396 @@
+/* KEY COLORS */
+:root {
+  --primary-red: #dc2626;
+  --primary-orange: #ea580c;
+  --dark-blue: #1e40af;
+  --text-dark: #1f2937;
+  --text-gray: #6b7280;
+  --bg-light: #f9fafb;
+}
+
+/* Base Hero Section */
+.hero-section {
+  background: var(--bg-light);
+  /* Adding a subtle dotted pattern for texture */
+  background-image: radial-gradient(var(--text-gray) 1px, transparent 0);
+  background-size: 40px 40px;
+  padding: 8rem 0 6rem; /* Increased padding */
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden; /* Contains the floating elements */
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.hero-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem; /* Increased gap */
+  align-items: center;
+}
+
+/* Typography and Text */
+.hero-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-title {
+  font-size: 3.8rem; /* Larger font size */
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  color: var(--text-dark);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary-red), var(--primary-orange));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-gray);
+  margin-bottom: 3rem;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+/* Buttons (VUA Standard) */
+.vua-btn {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Springy transition */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 1.1rem;
+}
+
+.vua-btn-primary {
+  background: linear-gradient(145deg, var(--primary-red), var(--primary-orange));
+  color: white;
+  box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
+}
+
+.vua-btn-primary:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(220, 38, 38, 0.5);
+}
+
+/* Animation for the "Get Started" button to draw attention */
+.pulse {
+  animation: pulse-shadow 2s infinite;
+}
+
+@keyframes pulse-shadow {
+  0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
+  70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
+
+.vua-btn-secondary {
+  background: white;
+  color: var(--primary-red);
+  border: 2px solid var(--primary-red);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.vua-btn-secondary:hover {
+  background: var(--primary-red);
+  color: white;
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 4rem;
+  flex-wrap: wrap;
+}
+
+/* Stats */
+.hero-stats {
+  display: flex;
+  gap: 4rem;
+  padding-top: 1rem;
+}
+
+.stat {
+  text-align: left;
+  position: relative;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--dark-blue);
+  margin-bottom: 0.25rem;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 1rem;
+  color: var(--text-gray);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Visual Area (Advanced UI) */
+.hero-visual-container {
+  position: relative;
+  height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.african-map-model {
+  width: 450px;
+  height: 450px;
+  background: #252839; /* Dark, tech-like background */
+  border-radius: 50%;
+  box-shadow: 
+    0 0 0 10px rgba(255, 255, 255, 0.05), /* Outer ring */
+    0 0 50px rgba(0, 0, 0, 0.5), /* Deep shadow */
+    inset 0 0 20px rgba(0, 0, 0, 0.2); /* Inner depth */
+  position: relative;
+  overflow: hidden;
+  transform: rotateX(20deg) rotateY(10deg); /* Subtle 3D tilt */
+  transition: transform 0.5s ease;
+}
+
+.african-map-model:hover {
+  transform: rotateX(0deg) rotateY(0deg);
+}
+
+/* Stylized Map Lines (simulate a globe/data visualization) */
+.african-map-model::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Simulating a stylized map/grid with light blue lines */
+  background-image: 
+    repeating-linear-gradient(0deg, rgba(73, 108, 230, 0.2), rgba(73, 108, 230, 0.2) 1px, transparent 1px, transparent 20px),
+    repeating-linear-gradient(90deg, rgba(73, 108, 230, 0.2), rgba(73, 108, 230, 0.2) 1px, transparent 1px, transparent 20px);
+  background-size: 20px 20px;
+  opacity: 0.8;
+  border-radius: 50%;
+}
+
+.location-pin {
+  position: absolute;
+  font-size: 2rem;
+  animation: float 4s ease-in-out infinite, glow-pin 2s ease-in-out infinite;
+  z-index: 5;
+  cursor: pointer;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+}
+
+.pin-1 { top: 35%; left: 30%; animation-delay: 0s; }
+.pin-2 { top: 65%; left: 75%; animation-delay: 1s; }
+.pin-3 { top: 45%; left: 60%; animation-delay: 2s; }
+.pin-4 { top: 75%; left: 45%; animation-delay: 3s; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-10px) scale(1.05); }
+}
+
+@keyframes glow-pin {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+
+/* Floating Cards (Glassmorphism inspired) */
+.floating-card {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.6); /* Semi-transparent white */
+  backdrop-filter: blur(8px); /* Blur effect */
+  padding: 1rem 1.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: float-card 8s ease-in-out infinite;
+  z-index: 10;
+  transform: rotateZ(-5deg); /* Slight initial rotation for style */
+}
+
+@keyframes float-card {
+  0% { transform: translate(0, 0) rotateZ(-5deg); }
+  25% { transform: translate(10px, -10px) rotateZ(-3deg); }
+  50% { transform: translate(5px, 0) rotateZ(-5deg); }
+  75% { transform: translate(10px, 10px) rotateZ(-7deg); }
+  100% { transform: translate(0, 0) rotateZ(-5deg); }
+}
+
+.card-1 {
+  top: 5%;
+  left: 20%;
+  animation-delay: 0s;
+  transform: rotateZ(3deg);
+}
+
+.card-2 {
+  bottom: 10%;
+  left: 10%;
+  animation-delay: 3s;
+  transform: rotateZ(-8deg);
+}
+
+.card-3 {
+  top: 40%;
+  right: 15%;
+  animation-delay: 6s;
+  transform: rotateZ(5deg);
+}
+
+.card-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.card-text {
+  font-weight: 700;
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+
+/* Responsive Design */
+@media (max-width: 1100px) {
+  .hero-title {
+    font-size: 3rem;
+  }
+  .african-map-model {
+    width: 400px;
+    height: 400px;
+  }
+}
+
+@media (max-width: 968px) {
+  .hero-section {
+    padding: 6rem 0;
+  }
+  .hero-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 3rem;
+  }
+
+  .hero-title {
+    font-size: 2.8rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.15rem;
+  }
+
+  .hero-stats {
+    justify-content: center;
+    gap: 3rem;
+  }
+  
+  .stat {
+      text-align: center;
+  }
+
+  .hero-visual-container {
+    height: 350px;
+  }
+
+  .african-map-model {
+    width: 350px;
+    height: 350px;
+    transform: rotateX(0) rotateY(0); 
+  }
+  
+  .floating-card {
+    /* Hide floating cards to clean up the mobile view */
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 4rem 0;
+  }
+
+  .hero-title {
+    font-size: 2.2rem;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .vua-btn-large {
+    width: 100%;
+    font-size: 1rem;
+    padding: 0.9rem 1.5rem;
+  }
+
+  .hero-stats {
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 1rem;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
+  }
+
+  .african-map-model {
+    width: 300px;
+    height: 300px;
+  }
+  .location-pin {
+      font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.8rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+  .hero-stats {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+}

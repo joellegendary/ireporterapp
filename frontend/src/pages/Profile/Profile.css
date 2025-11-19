@@ -1,0 +1,387 @@
+/* src/pages/Profile/Profile.css */
+
+/* --- Base Layout --- */
+.profile {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #f8fafc, #edf2f7); /* Consistent with Dashboard */
+  font-family: 'Inter', sans-serif; /* Consistent font */
+  color: #334155;
+}
+
+.profile-main {
+  margin-left: 260px;
+  transition: margin-left 0.3s ease-in-out;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-main.collapsed {
+  margin-left: 70px;
+}
+
+.profile-content {
+  flex-grow: 1;
+  padding: 3.5rem 2rem; /* More vertical padding */
+  max-width: 1200px; /* Wider content area for grid */
+  margin: 0 auto; /* Centered horizontally */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* --- Profile Header --- */
+.profile-header {
+  margin-bottom: 3rem; /* More space below header */
+  text-align: center; /* Center the profile settings title */
+}
+
+.profile-title {
+  font-size: 2.8rem; /* Larger, consistent with Dashboard titles */
+  font-weight: 800;
+  color:rgb(2, 2, 93);
+  margin-bottom: 0.8rem;
+  background: linear-gradient(135deg, #0e7490, #164e63); /* Same gradient as Dashboard title */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.profile-subtitle {
+  font-size: 1.15rem;
+  color: #64748b;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* --- Profile Grid Layout --- */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 2.5fr; /* Slightly larger main form column */
+  gap: 2.5rem; /* Consistent gap */
+  align-items: start; /* Align items to the top */
+}
+
+.profile-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* More space between avatar and stats cards */
+}
+
+/* --- Profile Avatar Card --- */
+.profile-avatar-card { /* Renamed from .profile-avatar */
+  text-align: center;
+  padding: 2.5rem 1.5rem; /* More padding */
+  background: white;
+  border-radius: 16px; /* Consistent with Dashboard cards */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); /* Softer, deeper shadow */
+  border: 1px solid #eceff1;
+  transition: all 0.2s ease-in-out;
+}
+
+.avatar-image {
+  width: 140px; /* Slightly larger avatar */
+  height: 140px;
+  background: linear-gradient(135deg, #0e7490, #34d399); /* Modern gradient for avatar */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2.5rem; /* Larger initials */
+  font-weight: 700;
+  margin: 0 auto 1.5rem; /* More margin */
+  box-shadow: 0 5px 15px rgba(14, 116, 144, 0.3); /* Shadow for avatar itself */
+}
+
+.avatar-name {
+  font-size: 1.5rem; /* Larger name */
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+}
+
+.avatar-role {
+  font-size: 0.95rem; /* Slightly larger role text */
+  color: #64748b;
+  padding: 0.6em 1.2em; /* More padding */
+  background: #f1f5f9;
+  border-radius: 25px; /* More pill-like */
+  display: inline-block;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.avatar-role.admin {
+  background: linear-gradient(45deg, #fee2e2, #fca5a5); /* Softer admin badge gradient */
+  color: #ea580c;
+  font-weight: 700; /* Bolder for admin */
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+/* --- Profile Stats Card --- */
+.profile-stats-card { /* Renamed from .profile-stats */
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem; /* More padding */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid #eceff1;
+  transition: all 0.2s ease-in-out;
+}
+
+.profile-stats-card:hover { /* Add hover effect to stats card */
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.stats-title { /* Keep this specific to the profile stats title */
+  font-size: 1.2rem; /* Larger, more prominent */
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 1.5rem; /* More space */
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid #f0f4f7; /* Subtle separator */
+}
+
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* More space between items */
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px dashed #f1f5f9; /* Dashed separator */
+  font-size: 1rem; /* Slightly larger text */
+}
+
+.stat-item:last-child {
+  border-bottom: none; /* No border on last item */
+}
+
+.stat-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* --- Profile Form Card --- */
+.profile-form-card { /* Renamed from .profile-form */
+  background: white;
+  border-radius: 16px;
+  padding: 3rem; /* More padding */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid #eceff1;
+}
+
+.form-section {
+  margin-bottom: 2.5rem; /* More space between sections */
+}
+
+.form-section-title {
+  font-size: 1.6rem; /* Larger title */
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1.8rem; /* More space */
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e0f2fe; /* Subtle themed border */
+  letter-spacing: -0.01em;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem; /* Consistent gap */
+  margin-bottom: 1.5rem; /* Gap between rows */
+}
+
+.form-group {
+  margin-bottom: 1.5rem; /* Space between form groups when not in a row */
+}
+.form-row .form-group {
+  margin-bottom: 0; /* No bottom margin when in a row */
+}
+
+
+.form-label {
+  display: block;
+  font-size: 0.95rem; /* Slightly larger label */
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.6rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.9rem 1.2rem; /* More padding */
+  border: 1px solid #cbd5e1;
+  border-radius: 10px; /* More rounded inputs */
+  font-size: 1rem;
+  color: #334155;
+  background-color: #f8fafc; /* Subtle off-white background */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #ea580c; /* Accent color on focus */
+  box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.2); /* Soft focus ring */
+  background-color: white;
+}
+
+.form-input:disabled {
+  background-color: #e2e8f0; /* Clear disabled state */
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem; /* Consistent gap */
+  justify-content: flex-end;
+  margin-top: 3rem; /* More space above actions */
+  padding-top: 2rem;
+  border-top: 2px solid #e0f2fe; /* Themed border */
+}
+
+/* --- Buttons (Using Dashboard's global button styles for consistency) --- */
+/* Assuming .btn, .btn-primary, .btn-secondary are defined in a global CSS file or Dashboard.css */
+.btn {
+  padding: 0.9rem 1.8rem; /* Adjusted padding */
+  border: none;
+  border-radius: 10px; /* More rounded */
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #ed7b3e, #f45a07);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.btn-secondary {
+  background-color: #f0f4f7;
+  color: #ea580c;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+
+/* --- Mobile Responsive --- */
+@media (max-width: 1024px) { /* Adjust for larger tablets */
+  .profile-content {
+    padding: 2.5rem 1.5rem;
+  }
+  .profile-grid {
+    grid-template-columns: 1fr; /* Stack columns on smaller screens */
+    gap: 2rem;
+  }
+  .profile-sidebar {
+    order: 2; /* Move sidebar below form on mobile */
+  }
+  .profile-form-card {
+    order: 1; /* Move form above sidebar on mobile */
+  }
+  .form-row {
+    grid-template-columns: 1fr; /* Stack form fields */
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-main {
+    margin-left: 0 !important;
+  }
+  .profile-content {
+    padding: 2rem 1rem;
+  }
+  .profile-title {
+    font-size: 2.2rem;
+  }
+  .profile-subtitle {
+    font-size: 1rem;
+  }
+  .profile-avatar-card,
+  .profile-stats-card,
+  .profile-form-card {
+    padding: 1.8rem;
+  }
+  .avatar-image {
+    width: 100px;
+    height: 100px;
+    font-size: 2rem;
+  }
+  .avatar-name {
+    font-size: 1.3rem;
+  }
+  .form-section-title {
+    font-size: 1.4rem;
+  }
+  .form-label {
+    font-size: 0.9rem;
+  }
+  .form-input {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch; /* Stretch buttons to full width */
+  }
+  .btn {
+    width: 100%; /* Full width buttons on mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-content {
+    padding: 1.5rem 0.8rem;
+  }
+  .profile-title {
+    font-size: 1.8rem;
+  }
+  .profile-subtitle {
+    font-size: 0.95rem;
+  }
+  .profile-avatar-card,
+  .profile-stats-card,
+  .profile-form-card {
+    padding: 1.2rem;
+  }
+  .stats-title {
+    font-size: 1.1rem;
+  }
+  .stat-item {
+    font-size: 0.9rem;
+  }
+  .form-section-title {
+    font-size: 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+}
