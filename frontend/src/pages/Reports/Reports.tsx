@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useReports } from "../../context/ReportContext";
 import ReportsTable from "../../components/ReportsTable/ReportsTable";
 import { Incident } from "../../utils/types";
-import "./Reports.css"; // Changed CSS filename
+import "./Reports.css";
 
 // Icons
 import { FiFilter, FiSearch, FiPlus, FiBarChart2 } from "react-icons/fi";
@@ -12,12 +12,14 @@ import { FiFilter, FiSearch, FiPlus, FiBarChart2 } from "react-icons/fi";
 const Reports: React.FC = () => {
   const { user } = useAuth();
   const { getUserReports, deleteReport } = useReports();
+  const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
 
+  // Include 'reports' implicitly by calling getUserReports
   const userReports = useMemo(
     () => getUserReports(user?.id || 0),
     [user?.id, getUserReports]
@@ -52,9 +54,8 @@ const Reports: React.FC = () => {
         `Are you sure you want to delete "${report.title}"? This action cannot be undone.`
       )
     ) {
-      const success = deleteReport(id);
-      // FIX: Add await before the promise
-      if (await success) {
+      const success = await deleteReport(id);
+      if (success) {
         alert("Report deleted successfully!");
       } else {
         alert("Failed to delete report. Please try again.");
@@ -63,7 +64,7 @@ const Reports: React.FC = () => {
   };
 
   const handleEditReport = (id: number) => {
-    window.location.href = `/edit-report/${id}`;
+    navigate(`/edit-report/${id}`);
   };
 
   const handleViewReport = (report: Incident) => {
@@ -97,7 +98,6 @@ ${report.videos.length > 0 ? `🎥 Videos: ${report.videos.length} attached` : "
 
   return (
     <div className="reports-page-container">
-      {/* Simple Header */}
       <div className="reports-page-header">
         <div className="reports-page-title-section">
           <h1 className="reports-page-title">
@@ -114,7 +114,6 @@ ${report.videos.length > 0 ? `🎥 Videos: ${report.videos.length} attached` : "
         </Link>
       </div>
 
-      {/* Simple Search and Filters */}
       <div className="reports-page-controls">
         <div className="reports-page-search-section">
           <div className="reports-page-search-wrapper">
@@ -129,7 +128,9 @@ ${report.videos.length > 0 ? `🎥 Videos: ${report.videos.length} attached` : "
           </div>
 
           <button
-            className={`reports-page-filter-toggle ${showFilters ? "reports-page-filter-active" : ""}`}
+            className={`reports-page-filter-toggle ${
+              showFilters ? "reports-page-filter-active" : ""
+            }`}
             onClick={() => setShowFilters(!showFilters)}
           >
             <FiFilter className="reports-page-filter-icon" />
@@ -182,7 +183,6 @@ ${report.videos.length > 0 ? `🎥 Videos: ${report.videos.length} attached` : "
         )}
       </div>
 
-      {/* Reports Table Only */}
       <div className="reports-page-content">
         <div className="reports-page-table-section">
           <div className="reports-page-table-header">
@@ -202,6 +202,7 @@ ${report.videos.length > 0 ? `🎥 Videos: ${report.videos.length} attached` : "
             onEdit={handleEditReport}
             onDelete={handleDeleteReport}
             onView={handleViewReport}
+            isAdmin={user?.isAdmin || false}
           />
 
           {filteredReports.length === 0 && (

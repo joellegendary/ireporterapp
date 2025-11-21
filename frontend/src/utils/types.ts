@@ -38,10 +38,12 @@ export interface Incident {
   type: "red-flag" | "intervention";
   title: string;
   location: string;
+  latitude?: number | string;
+  longitude?: number | string;
   status: "draft" | "under investigation" | "resolved" | "rejected";
   images: string[];
   videos: string[];
-  comment: string;
+  comment: string; // <--- updated
   lastModifiedBy?: number;
   lastModifiedAt?: Date;
   adminActions?: AdminAction[];
@@ -49,7 +51,6 @@ export interface Incident {
 
 // =========================
 // AUTH RESPONSE TYPE
-// (used by login + signup)
 // =========================
 export interface AuthResponse {
   success: boolean;
@@ -77,12 +78,29 @@ export interface AuthContextType {
 }
 
 // =========================
+// CREATE REPORT DATA TYPE
+// =========================
+export interface CreateReportData {
+  title: string;
+  comment: string; // <--- changed from description
+  type?: "red-flag" | "intervention";
+  status?: "draft" | "under investigation" | "resolved" | "rejected";
+  location?: string;
+  latitude?: number | string;
+  longitude?: number | string;
+  file?: File;
+  images?: string[]; // optional if you handle multiple files
+  videos?: string[]; // optional if you handle multiple files
+  createdBy?: number; // optional, set by context or backend
+}
+
+// =========================
 // REPORT CONTEXT TYPE
 // =========================
 export interface ReportContextType {
   reports: Incident[];
 
-  addReport: (report: Omit<Incident, "id" | "createdOn">) => Promise<number>;
+  addReport: (report: CreateReportData) => Promise<number>;
 
   updateReport: (id: number, updates: Partial<Incident>) => Promise<boolean>;
 
