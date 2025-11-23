@@ -8,7 +8,6 @@ import {
 import { AuthProvider } from "./context/AuthContext";
 import { ReportProvider } from "./context/ReportContext";
 import { useAuth } from "./context/AuthContext";
-import "./App.css ";
 
 // Pages
 import Landing from "./pages/Landing/Landing";

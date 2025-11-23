@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useReports } from "../../context/ReportContext";
 import ReportsTable from "../../components/ReportsTable/ReportsTable";
 import { Incident } from "../../utils/types";
-import "./Reports.css"; // Changed CSS filename
+import "./Reports.css";
 
 // Icons
 import { FiFilter, FiSearch, FiPlus, FiBarChart2 } from "react-icons/fi";
@@ -18,74 +18,101 @@ const Reports: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
 
+  // --- LOAD REPORTS ---
   const userReports = useMemo(
     () => getUserReports(user?.id || 0),
     [user?.id, getUserReports]
   );
 
+  // --- SAFELY APPLY FILTERS ---
   const filteredReports = useMemo(() => {
     return userReports.filter((report) => {
+      const text = searchTerm.toLowerCase();
+
+      const rTitle = report.title?.toLowerCase() || "";
+      const rComment = report.comment?.toLowerCase() || "";
+      const rLocation = report.location?.toLowerCase() || "";
+
       const matchesSearch =
-        report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        report.comment.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        report.location.toLowerCase().includes(searchTerm.toLowerCase());
+        rTitle.includes(text) ||
+        rComment.includes(text) ||
+        rLocation.includes(text);
 
       const matchesStatus =
         statusFilter === "all" || report.status === statusFilter;
+
       const matchesType = typeFilter === "all" || report.type === typeFilter;
 
       return matchesSearch && matchesStatus && matchesType;
     });
   }, [userReports, searchTerm, statusFilter, typeFilter]);
 
+  // --- DELETE REPORT ---
   const handleDeleteReport = async (id: number) => {
     const report = userReports.find((r) => r.id === id);
     if (!report) return;
 
     if (report.status !== "draft") {
-      alert("You can only delete reports that are in draft status.");
+      alert("You can only delete reports that are still in draft.");
       return;
     }
 
     if (
-      window.confirm(
-        `Are you sure you want to delete "${report.title}"? This action cannot be undone.`
+      !window.confirm(
+        `Are you sure you want to delete "${report.title}"? This cannot be undone.`
       )
     ) {
-      const success = deleteReport(id);
-      // FIX: Add await before the promise
-      if (await success) {
-        alert("Report deleted successfully!");
-      } else {
-        alert("Failed to delete report. Please try again.");
-      }
+      return;
+    }
+
+    const result = await deleteReport(id);
+
+    if (result) {
+      alert("Report deleted successfully.");
+    } else {
+      alert("Failed to delete report. Please try again.");
     }
   };
 
+  // --- EDIT REPORT ---
   const handleEditReport = (id: number) => {
     window.location.href = `/edit-report/${id}`;
   };
 
+  // --- SAFE VIEW ---
   const handleViewReport = (report: Incident) => {
+    const images = Array.isArray(report.images) ? report.images : [];
+    const videos = Array.isArray(report.videos) ? report.videos : [];
+
+    const title = report.title || "No title";
+    const type = report.type === "red-flag" ? "Red Flag 🚩" : "Intervention ⚙️";
+    const status = report.status || "Unknown";
+    const date = report.createdOn
+      ? new Date(report.createdOn).toLocaleDateString()
+      : "No date";
+    const location = report.location || "No location provided";
+    const comments = report.comment || "No comments";
+
     const details = `
-📋 Report Details:
+📋 Report Details
 
-Title: ${report.title}
-Type: ${report.type === "red-flag" ? "Red Flag 🚩" : "Intervention ⚙️"}
-Status: ${report.status}
-Date: ${new Date(report.createdOn).toLocaleDateString()}
-Location: ${report.location}
+Title: ${title}
+Type: ${type}
+Status: ${status}
+Date: ${date}
+Location: ${location}
 
-Description:
-${report.comment}
+Comments:
+${comments}
 
-${report.images.length > 0 ? `📷 Images: ${report.images.length} attached` : ""}
-${report.videos.length > 0 ? `🎥 Videos: ${report.videos.length} attached` : ""}
+${images.length > 0 ? `📷 Images: ${images.length} attached` : ""}
+${videos.length > 0 ? `🎥 Videos: ${videos.length} attached` : ""}
     `.trim();
 
     alert(details);
   };
 
+  // --- FILTER RESET ---
   const clearFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
@@ -93,11 +120,11 @@ ${report.videos.length > 0 ? `🎥 Videos: ${report.videos.length} attached` : "
   };
 
   const hasActiveFilters =
-    searchTerm || statusFilter !== "all" || typeFilter !== "all";
+    searchTerm !== "" || statusFilter !== "all" || typeFilter !== "all";
 
   return (
     <div className="reports-page-container">
-      {/* Simple Header */}
+      {/* HEADER */}
       <div className="reports-page-header">
         <div className="reports-page-title-section">
           <h1 className="reports-page-title">
@@ -108,13 +135,14 @@ ${report.videos.length > 0 ? `🎥 Videos: ${report.videos.length} attached` : "
             View and manage all your submitted reports
           </p>
         </div>
+
         <Link to="/create-report" className="reports-page-create-btn">
           <FiPlus className="reports-page-btn-icon" />
           New Report
         </Link>
       </div>
 
-      {/* Simple Search and Filters */}
+      {/* SEARCH + FILTERS */}
       <div className="reports-page-controls">
         <div className="reports-page-search-section">
           <div className="reports-page-search-wrapper">
@@ -129,8 +157,10 @@ ${report.videos.length > 0 ? `🎥 Videos: ${report.videos.length} attached` : "
           </div>
 
           <button
-            className={`reports-page-filter-toggle ${showFilters ? "reports-page-filter-active" : ""}`}
-            onClick={() => setShowFilters(!showFilters)}
+            className={`reports-page-filter-toggle ${
+              showFilters ? "reports-page-filter-active" : ""
+            }`}
+            onClick={() => setShowFilters((prev) => !prev)}
           >
             <FiFilter className="reports-page-filter-icon" />
             Filters
@@ -149,7 +179,7 @@ ${report.videos.length > 0 ? `🎥 Videos: ${report.videos.length} attached` : "
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="reports-page-filter-select"
               >
-                <option value="all">All Statuses</option>
+                <option value="all">All</option>
                 <option value="draft">Draft</option>
                 <option value="under investigation">Under Investigation</option>
                 <option value="resolved">Resolved</option>
@@ -164,7 +194,7 @@ ${report.videos.length > 0 ? `🎥 Videos: ${report.videos.length} attached` : "
                 onChange={(e) => setTypeFilter(e.target.value)}
                 className="reports-page-filter-select"
               >
-                <option value="all">All Types</option>
+                <option value="all">All</option>
                 <option value="red-flag">Red Flag</option>
                 <option value="intervention">Intervention</option>
               </select>
@@ -182,13 +212,14 @@ ${report.videos.length > 0 ? `🎥 Videos: ${report.videos.length} attached` : "
         )}
       </div>
 
-      {/* Reports Table Only */}
+      {/* TABLE */}
       <div className="reports-page-content">
         <div className="reports-page-table-section">
           <div className="reports-page-table-header">
             <h3 className="reports-page-table-title">
               All Reports ({filteredReports.length})
             </h3>
+
             {hasActiveFilters && (
               <span className="reports-page-filtered-info">
                 Filtered from {userReports.length} total
@@ -213,6 +244,7 @@ ${report.videos.length > 0 ? `🎥 Videos: ${report.videos.length} attached` : "
                   ? "Try adjusting your filters or search terms"
                   : "Get started by creating your first report"}
               </p>
+
               {!hasActiveFilters && (
                 <Link to="/create-report" className="reports-page-create-btn">
                   <FiPlus className="reports-page-btn-icon" />

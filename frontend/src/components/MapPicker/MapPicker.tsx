@@ -1,15 +1,20 @@
-import React, { useState } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import React, { useState, useEffect } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
 import L from "leaflet";
-
-import "leaflet/dist/leaflet.css"; // OPTION 2 — CSS imported here
+import "leaflet/dist/leaflet.css";
 
 interface MapPickerProps {
   onLocationSelect: (lat: number, lng: number) => void;
   initialLocation?: { lat: number; lng: number };
 }
 
-// Fix marker icon paths (Leaflet default icons)
+// Fix marker icons
 const DefaultIcon = L.icon({
   iconUrl: require("leaflet/dist/images/marker-icon.png"),
   iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
@@ -19,6 +24,13 @@ const DefaultIcon = L.icon({
 });
 
 L.Marker.prototype.options.icon = DefaultIcon;
+
+// Helper component to move the map center
+const RecenterMap = ({ lat, lng }: { lat: number; lng: number }) => {
+  const map = useMap();
+  map.setView([lat, lng]);
+  return null;
+};
 
 const LocationEvents = ({
   onSelect,
@@ -30,7 +42,6 @@ const LocationEvents = ({
       onSelect(e.latlng.lat, e.latlng.lng);
     },
   });
-
   return null;
 };
 
@@ -42,6 +53,26 @@ const MapPicker: React.FC<MapPickerProps> = ({
     initialLocation || null
   );
 
+  // Run on component mount to auto-detect location
+  useEffect(() => {
+    if (!selectedLocation) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            setSelectedLocation({ lat, lng });
+            onLocationSelect(lat, lng);
+          },
+          () => {
+            // fallback to Kampala center
+            setSelectedLocation({ lat: 0.3476, lng: 32.5825 });
+          }
+        );
+      }
+    }
+  }, []);
+
   const handleSelect = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng });
     onLocationSelect(lat, lng);
@@ -49,11 +80,7 @@ const MapPicker: React.FC<MapPickerProps> = ({
 
   const getCurrentLocation = () => {
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        handleSelect(lat, lng);
-      },
+      (pos) => handleSelect(pos.coords.latitude, pos.coords.longitude),
       () => alert("Could not get your location")
     );
   };
@@ -71,19 +98,22 @@ const MapPicker: React.FC<MapPickerProps> = ({
         📍 Use My Location
       </button>
 
-      <MapContainer
-        center={selectedLocation || { lat: 0, lng: 0 }}
-        zoom={5}
-        style={{ height: "350px", width: "100%", borderRadius: "10px" }}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      {selectedLocation && (
+        <MapContainer
+          center={selectedLocation}
+          zoom={14}
+          style={{ height: "350px", width: "100%", borderRadius: "10px" }}
+        >
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-        <LocationEvents onSelect={handleSelect} />
+          <RecenterMap lat={selectedLocation.lat} lng={selectedLocation.lng} />
+          <LocationEvents onSelect={handleSelect} />
 
-        {selectedLocation && (
           <Marker position={[selectedLocation.lat, selectedLocation.lng]} />
-        )}
-      </MapContainer>
+        </MapContainer>
+      )}
+
+      {!selectedLocation && <p>Loading map...</p>}
 
       {selectedLocation && (
         <div>
