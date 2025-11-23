@@ -10,7 +10,29 @@ export interface User {
   email: string;
   phoneNumber: string;
   isAdmin: boolean;
-  registered: string;
+  registered: string; // ISO string date
+}
+
+// =========================
+// INCIDENT / REPORT TYPE
+// =========================
+export interface Incident {
+  id: number;
+  createdBy: number; // user id
+  type: "red-flag" | "intervention";
+  title: string;
+  comment: string;
+  status:
+    | "draft"
+    | "submitted"
+    | "under-investigation"
+    | "resolved"
+    | "rejected";
+  location: string; // "lat, lng" or map string
+  images: string[];
+  videos: string[];
+  createdOn: string; // ISO string date
+  updatedOn?: string;
 }
 
 // =========================
@@ -19,61 +41,10 @@ export interface User {
 export interface AdminAction {
   id: string;
   adminId: number;
-  adminName: string;
-  action: "status_change" | "reject" | "approve" | "view";
-  reportId: number;
-  oldStatus?: string;
-  newStatus?: string;
-  timestamp: Date;
-  notes?: string;
-}
-
-// =========================
-// INCIDENT TYPE
-// =========================
-export interface Incident {
-  id: number;
-  createdOn: Date;
-  createdBy: number;
-  type: "red-flag" | "intervention";
-  title: string;
-  location: string;
-  status: "draft" | "under investigation" | "resolved" | "rejected";
-  images: string[];
-  videos: string[];
-  comment: string;
-  lastModifiedBy?: number;
-  lastModifiedAt?: Date;
-  adminActions?: AdminAction[];
-}
-
-// =========================
-// AUTH RESPONSE TYPE
-// (used by login + signup)
-// =========================
-export interface AuthResponse {
-  success: boolean;
-  message: string;
-  user?: User;
-  token?: string;
-}
-
-// =========================
-// AUTH CONTEXT TYPE
-// =========================
-export interface AuthContextType {
-  user: User | null;
-  token: string | null;
-
-  login: (email: string, password: string) => Promise<AuthResponse>;
-
-  signup: (
-    userData: Omit<User, "id" | "registered" | "isAdmin">
-  ) => Promise<AuthResponse>;
-
-  logout: () => void;
-
-  isAuthenticated: boolean;
+  actionType: "approve" | "reject" | "update-status";
+  incidentId: number;
+  timestamp: string;
+  details?: string;
 }
 
 // =========================
@@ -81,18 +52,16 @@ export interface AuthContextType {
 // =========================
 export interface ReportContextType {
   reports: Incident[];
+  loading?: boolean;
+  error?: string | null;
 
   addReport: (report: Omit<Incident, "id" | "createdOn">) => Promise<number>;
-
   updateReport: (id: number, updates: Partial<Incident>) => Promise<boolean>;
-
   deleteReport: (id: number) => Promise<boolean>;
 
   getReport: (id: number) => Incident | undefined;
-
   getUserReports: (userId: number) => Incident[];
-
   getAllReports: () => Incident[];
-  loading?: boolean;
+
   debugReports?: () => void;
 }

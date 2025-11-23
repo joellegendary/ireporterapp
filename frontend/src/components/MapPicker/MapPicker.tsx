@@ -11,10 +11,10 @@ import "leaflet/dist/leaflet.css";
 
 interface MapPickerProps {
   onLocationSelect: (lat: number, lng: number) => void;
-  initialLocation?: { lat: number; lng: number };
+  initialLocation?: { lat: number; lng: number } | null;
 }
 
-// Fix marker icons
+// Fix default marker icon
 const DefaultIcon = L.icon({
   iconUrl: require("leaflet/dist/images/marker-icon.png"),
   iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
@@ -25,7 +25,7 @@ const DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Helper component to move the map center
+// Move the map when coordinates change
 const RecenterMap = ({ lat, lng }: { lat: number; lng: number }) => {
   const map = useMap();
   map.setView([lat, lng]);
@@ -49,11 +49,12 @@ const MapPicker: React.FC<MapPickerProps> = ({
   onLocationSelect,
   initialLocation,
 }) => {
-  const [selectedLocation, setSelectedLocation] = useState(
-    initialLocation || null
-  );
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(initialLocation ?? null);
 
-  // Run on component mount to auto-detect location
+  // Detect location only on first load if no initial location provided
   useEffect(() => {
     if (!selectedLocation) {
       if (navigator.geolocation) {
@@ -66,12 +67,14 @@ const MapPicker: React.FC<MapPickerProps> = ({
           },
           () => {
             // fallback to Kampala center
-            setSelectedLocation({ lat: 0.3476, lng: 32.5825 });
+            const fallback = { lat: 0.3476, lng: 32.5825 };
+            setSelectedLocation(fallback);
+            onLocationSelect(fallback.lat, fallback.lng);
           }
         );
       }
     }
-  }, []);
+  }, [selectedLocation, onLocationSelect]);
 
   const handleSelect = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng });
@@ -98,31 +101,34 @@ const MapPicker: React.FC<MapPickerProps> = ({
         📍 Use My Location
       </button>
 
-      {selectedLocation && (
-        <MapContainer
-          center={selectedLocation}
-          zoom={14}
-          style={{ height: "350px", width: "100%", borderRadius: "10px" }}
-        >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      {selectedLocation ? (
+        <>
+          <MapContainer
+            center={selectedLocation}
+            zoom={14}
+            style={{ height: "350px", width: "100%", borderRadius: "10px" }}
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-          <RecenterMap lat={selectedLocation.lat} lng={selectedLocation.lng} />
-          <LocationEvents onSelect={handleSelect} />
+            <RecenterMap
+              lat={selectedLocation.lat}
+              lng={selectedLocation.lng}
+            />
+            <LocationEvents onSelect={handleSelect} />
 
-          <Marker position={[selectedLocation.lat, selectedLocation.lng]} />
-        </MapContainer>
-      )}
+            <Marker position={[selectedLocation.lat, selectedLocation.lng]} />
+          </MapContainer>
 
-      {!selectedLocation && <p>Loading map...</p>}
-
-      {selectedLocation && (
-        <div>
-          <strong>Selected Coordinates:</strong>
-          <br />
-          Latitude: {selectedLocation.lat.toFixed(6)}
-          <br />
-          Longitude: {selectedLocation.lng.toFixed(6)}
-        </div>
+          <div>
+            <strong>Selected Coordinates:</strong>
+            <br />
+            Latitude: {selectedLocation.lat.toFixed(6)}
+            <br />
+            Longitude: {selectedLocation.lng.toFixed(6)}
+          </div>
+        </>
+      ) : (
+        <p>Loading map...</p>
       )}
     </div>
   );

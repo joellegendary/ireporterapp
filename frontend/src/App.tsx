@@ -9,6 +9,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ReportProvider } from "./context/ReportContext";
 import { useAuth } from "./context/AuthContext";
 
+
 // Pages
 import Landing from "./pages/Landing/Landing";
 import Login from "./pages/Auth/Login";

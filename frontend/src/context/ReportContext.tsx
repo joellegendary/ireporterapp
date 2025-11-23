@@ -1,9 +1,9 @@
 import React, {
   createContext,
   useContext,
-  useState,
   useEffect,
   useMemo,
+  useState,
 } from "react";
 import axios from "axios";
 import { Incident, ReportContextType } from "../utils/types";
@@ -27,7 +27,9 @@ export const ReportProvider: React.FC<{ children: React.ReactNode }> = ({
   const [reports, setReports] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Axios instance
+  // ---------------------------------------------------------
+  // AXIOS INSTANCE
+  // ---------------------------------------------------------
   const axiosInstance = useMemo(() => {
     return axios.create({
       baseURL: API_URL,
@@ -37,18 +39,28 @@ export const ReportProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, [token]);
 
-  // ============================
+  // ---------------------------------------------------------
   // LOAD ALL REPORTS
-  // ============================
+  // ---------------------------------------------------------
   useEffect(() => {
     if (!token) return;
 
     const fetchReports = async () => {
+      setLoading(true);
+
       try {
         const res = await axiosInstance.get("/");
-        setReports(res.data.data || []);
-      } catch (err) {
-        console.error("Error loading reports", err);
+        const data = res.data?.data;
+
+        if (Array.isArray(data)) {
+          setReports(data);
+        } else {
+          console.warn("Unexpected reports format:", data);
+          setReports([]);
+        }
+      } catch (error) {
+        console.error("Error fetching reports:", error);
+        setReports([]);
       } finally {
         setLoading(false);
       }
@@ -57,80 +69,92 @@ export const ReportProvider: React.FC<{ children: React.ReactNode }> = ({
     fetchReports();
   }, [axiosInstance, token]);
 
-  // ============================
+  // ---------------------------------------------------------
   // CREATE REPORT
-  // ============================
+  // ---------------------------------------------------------
   const addReport = async (
-    reportData: Omit<Incident, "id" | "createdOn">
+    data: Omit<Incident, "id" | "createdOn">
   ): Promise<number> => {
     try {
-      const response = await axiosInstance.post("/", {
-        ...reportData,
+      const res = await axiosInstance.post("/", {
+        ...data,
         createdBy: user?.id,
       });
 
-      const newReport: Incident = response.data.data;
+      const created: Incident = res.data?.data;
 
-      // Add full backend response
-      setReports((prev) => [...prev, newReport]);
+      if (!created || !created.id) {
+        console.error("Invalid response from backend");
+        return -1;
+      }
 
-      return newReport.id;
+      setReports((prev) => [...prev, created]);
+      return created.id;
     } catch (err) {
-      console.error("Error creating report", err);
+      console.error("Error creating report:", err);
       return -1;
     }
   };
 
-  // ============================
+  // ---------------------------------------------------------
   // UPDATE REPORT
-  // ============================
+  // ---------------------------------------------------------
   const updateReport = async (
     id: number,
     updates: Partial<Incident>
   ): Promise<boolean> => {
     try {
-      // Update in backend
-      await axiosInstance.put(`/${id}`, updates);
+      const res = await axiosInstance.put(`/${id}`, updates);
+      if (!res.data?.success) return false;
 
-      // Fetch updated report
-      const updated = await axiosInstance.get(`/${id}`);
-      const updatedReport: Incident = updated.data.data;
+      // Get updated data
+      const refreshed = await axiosInstance.get(`/${id}`);
+      const updated: Incident = refreshed.data?.data;
 
-      setReports((prev) => prev.map((r) => (r.id === id ? updatedReport : r)));
+      if (!updated) return false;
+
+      setReports((prev) =>
+        prev.map((r) => (r.id === id ? updated : r))
+      );
 
       return true;
     } catch (err) {
-      console.error("Error updating report", err);
+      console.error("Error updating report:", err);
       return false;
     }
   };
 
-  // ============================
+  // ---------------------------------------------------------
   // DELETE REPORT
-  // ============================
+  // ---------------------------------------------------------
   const deleteReport = async (id: number): Promise<boolean> => {
     try {
       await axiosInstance.delete(`/${id}`);
+
       setReports((prev) => prev.filter((r) => r.id !== id));
       return true;
     } catch (err) {
-      console.error("Error deleting report", err);
+      console.error("Error deleting report:", err);
       return false;
     }
   };
 
-  // ============================
+  // ---------------------------------------------------------
   // GETTERS
-  // ============================
-  const getReport = (id: number) => reports.find((r) => r.id === id);
+  // ---------------------------------------------------------
+  const getReport = (id: number): Incident | undefined =>
+    reports.find((r) => r.id === id);
 
-  const getUserReports = (userId: number) =>
+  const getUserReports = (userId: number): Incident[] =>
     reports.filter((r) => r.createdBy === userId);
 
-  const getAllReports = () => reports;
+  const getAllReports = (): Incident[] => reports;
 
   const debugReports = () => console.log("Reports:", reports);
 
+  // ---------------------------------------------------------
+  // CONTEXT VALUE
+  // ---------------------------------------------------------
   const value: ReportContextType = {
     reports,
     loading,
@@ -144,6 +168,8 @@ export const ReportProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <ReportContext.Provider value={value}>{children}</ReportContext.Provider>
+    <ReportContext.Provider value={value}>
+      {children}
+    </ReportContext.Provider>
   );
 };
