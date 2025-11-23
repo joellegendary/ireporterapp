@@ -1,101 +1,92 @@
-import React, { useState, useEffect } from 'react';
-import './MapPicker.css';
+import React, { useState } from "react";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import L from "leaflet";
+
+import "leaflet/dist/leaflet.css"; // OPTION 2 — CSS imported here
 
 interface MapPickerProps {
   onLocationSelect: (lat: number, lng: number) => void;
   initialLocation?: { lat: number; lng: number };
 }
 
-const MapPicker: React.FC<MapPickerProps> = ({ onLocationSelect, initialLocation }) => {
-  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(
+// Fix marker icon paths (Leaflet default icons)
+const DefaultIcon = L.icon({
+  iconUrl: require("leaflet/dist/images/marker-icon.png"),
+  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
+  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
+
+const LocationEvents = ({
+  onSelect,
+}: {
+  onSelect: (lat: number, lng: number) => void;
+}) => {
+  useMapEvents({
+    click(e) {
+      onSelect(e.latlng.lat, e.latlng.lng);
+    },
+  });
+
+  return null;
+};
+
+const MapPicker: React.FC<MapPickerProps> = ({
+  onLocationSelect,
+  initialLocation,
+}) => {
+  const [selectedLocation, setSelectedLocation] = useState(
     initialLocation || null
   );
-  const [mapLoaded, setMapLoaded] = useState(false);
 
-  // In a real app, you would use the Google Maps JavaScript API
-  // For now, we'll create a simulated map with click functionality
-  const handleMapClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    
-    // Convert click position to approximate coordinates
-    // This is simplified - in real app, use Google Maps API
-    const lat = -((y / rect.height) * 180 - 90);
-    const lng = ((x / rect.width) * 360 - 180);
-    
-    const location = { lat, lng };
-    setSelectedLocation(location);
+  const handleSelect = (lat: number, lng: number) => {
+    setSelectedLocation({ lat, lng });
     onLocationSelect(lat, lng);
   };
 
   const getCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const location = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          setSelectedLocation(location);
-          onLocationSelect(location.lat, location.lng);
-        },
-        (error) => {
-          alert('Unable to get your location. Please enable location services.');
-        }
-      );
-    } else {
-      alert('Geolocation is not supported by this browser.');
-    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        handleSelect(lat, lng);
+      },
+      () => alert("Could not get your location")
+    );
   };
 
   return (
-    <div className="map-picker">
-      <div className="map-header">
-        <h3 className="map-title">Select Location</h3>
-        <button 
-          type="button"
-          className="btn btn-secondary"
-          onClick={getCurrentLocation}
-        >
-          📍 Use My Location
-        </button>
-      </div>
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        gap: "10px",
+      }}
+    >
+      <button onClick={getCurrentLocation} className="btn btn-secondary">
+        📍 Use My Location
+      </button>
 
-      <div className="map-container" onClick={handleMapClick}>
-        {/* Simulated Map - Replace with Google Maps in production */}
-        <div className="simulated-map">
-          <div className="map-grid">
-            {Array.from({ length: 12 }).map((_, row) => (
-              <div key={row} className="map-row">
-                {Array.from({ length: 24 }).map((_, col) => (
-                  <div key={col} className="map-cell" />
-                ))}
-              </div>
-            ))}
-          </div>
-          
-          {selectedLocation && (
-            <div 
-              className="map-marker"
-              style={{
-                left: `${(selectedLocation.lng + 180) / 360 * 100}%`,
-                top: `${(-selectedLocation.lat + 90) / 180 * 100}%`
-              }}
-            >
-              📍
-            </div>
-          )}
-        </div>
+      <MapContainer
+        center={selectedLocation || { lat: 0, lng: 0 }}
+        zoom={5}
+        style={{ height: "350px", width: "100%", borderRadius: "10px" }}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-        <div className="map-overlay-text">
-          <p>Click on the map to select location</p>
-          <small>In production: Google Maps would be integrated here</small>
-        </div>
-      </div>
+        <LocationEvents onSelect={handleSelect} />
+
+        {selectedLocation && (
+          <Marker position={[selectedLocation.lat, selectedLocation.lng]} />
+        )}
+      </MapContainer>
 
       {selectedLocation && (
-        <div className="coordinates-display">
+        <div>
           <strong>Selected Coordinates:</strong>
           <br />
           Latitude: {selectedLocation.lat.toFixed(6)}

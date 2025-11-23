@@ -1,55 +1,101 @@
 import { pool } from "../config/db.js";
 
-export const getAllReports = async (req, res) => {
-    try {
-        let query = `SELECT * FROM incidents`;
-        let params = [];
-
-        // If not admin, filter by user
-        if (req.user.role !== "admin") {
-            query += " WHERE createdById = ?";
-            params.push(req.user.id);
-        }
-
-        const [rows] = await pool.query(query, params);
-        res.json(rows);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: error.message });
-    }
-};
-
+// =================== CREATE REPORT ===================
 export const createReport = async (req, res) => {
     try {
-        const { type, title, comment, location, coordinates, images, videos } = req.body;
-        const now = new Date();
+        const {
+            title,
+            type,
+            comment,
+            location,
+            image,
+            video,
+            createdBy,
+        } = req.body;
 
         const [result] = await pool.query(
-            `INSERT INTO incidents 
-        (type, title, comment, location, coordinates, images, videos, status, createdAt, updatedAt, createdById)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`,
-            [type, title, comment, location, coordinates, JSON.stringify(images), JSON.stringify(videos), now, now, req.user.id]
+            `INSERT INTO reports (title, type, comment, location, image, video, createdBy)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [title, type, comment, location, image, video, createdBy]
         );
 
-        res.status(201).json({ id: result.insertId, type, title, comment, location, coordinates, images, videos, status: "pending", createdAt: now, updatedAt: now, createdById: req.user.id });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: error.message });
+        return res.status(201).json({
+            success: true,
+            data: { id: result.insertId },
+        });
+    } catch (err) {
+        console.error("Error creating report:", err);
+        res.status(500).json({ success: false, error: "Server error" });
     }
 };
-export const getReportById = async (req, res) => {
+
+// =================== GET ALL REPORTS ===================
+export const getAllReports = async (req, res) => {
     try {
-        const reportId = req.params.id;
-        const [rows] = await pool.query(`SELECT * FROM incidents WHERE id = ?`, [reportId]);
-        const report = rows[0];
-        if (!report) return res.status(404).json({ message: "Report not found" });
-        // If not admin, ensure the user owns the report
-        if (req.user.role !== "admin" && report.createdById !== req.user.id) {
-            return res.status(403).json({ message: "Forbidden" });
+        const [rows] = await pool.query(
+            `SELECT * FROM reports ORDER BY createdOn DESC`
+        );
+        res.json({ success: true, data: rows });
+    } catch (err) {
+        console.error("Error fetching reports:", err);
+        res.status(500).json({ success: false, error: "Server error" });
+    }
+};
+
+// =================== GET SINGLE REPORT ===================
+export const getReportById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const [rows] = await pool.query(
+            `SELECT * FROM reports WHERE id = ?`,
+            [id]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, error: "Report not found" });
         }
-        res.json(report);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: error.message });
+
+        res.json({ success: true, data: rows[0] });
+    } catch (err) {
+        console.error("Error fetching report:", err);
+        res.status(500).json({ success: false, error: "Server error" });
+    }
+};
+
+// =================== UPDATE REPORT ===================
+export const updateReport = async (req, res) => {
+    const { id } = req.params;
+    const updates = req.body;
+
+    try {
+        const updateFields = Object.keys(updates)
+            .map((key) => `${key} = ?`)
+            .join(", ");
+
+        const values = Object.values(updates);
+
+        await pool.query(
+            `UPDATE reports SET ${updateFields} WHERE id = ?`,
+            [...values, id]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Error updating report:", err);
+        res.status(500).json({ success: false, error: "Server error" });
+    }
+};
+
+// =================== DELETE REPORT ===================
+export const deleteReport = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        await pool.query(`DELETE FROM reports WHERE id = ?`, [id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Error deleting report:", err);
+        res.status(500).json({ success: false, error: "Server error" });
     }
 };

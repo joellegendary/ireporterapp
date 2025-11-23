@@ -5,7 +5,6 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import type { ReactNode } from "react";
 import axios from "axios";
 import { Incident, ReportContextType } from "../utils/types";
 import { useAuth } from "./AuthContext";
@@ -20,17 +19,15 @@ export const useReports = () => {
   return ctx;
 };
 
-interface Props {
-  children: ReactNode;
-}
-
-export const ReportProvider: React.FC<Props> = ({ children }) => {
-  const { token, user } = useAuth(); // 🔥 token now available!
+export const ReportProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const { token, user } = useAuth();
 
   const [reports, setReports] = useState<Incident[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // 🔥 Axios instance WITH TOKEN
+  // Axios instance
   const axiosInstance = useMemo(() => {
     return axios.create({
       baseURL: API_URL,
@@ -40,60 +37,91 @@ export const ReportProvider: React.FC<Props> = ({ children }) => {
     });
   }, [token]);
 
-  // 🔥 Fetch all reports on mount or when token changes
+  // ============================
+  // LOAD ALL REPORTS
+  // ============================
   useEffect(() => {
-    if (!token) return; // don't fetch without login
+    if (!token) return;
 
     const fetchReports = async () => {
       try {
-        const response = await axiosInstance.get("/");
-        setReports(response.data);
+        const res = await axiosInstance.get("/");
+        setReports(res.data.data || []);
       } catch (err) {
-        console.error("Error fetching reports:", err);
+        console.error("Error loading reports", err);
       } finally {
-        setIsLoaded(true);
+        setLoading(false);
       }
     };
 
     fetchReports();
   }, [axiosInstance, token]);
 
-  // Add a report
-  const addReport = async (reportData: Omit<Incident, "id" | "createdOn">) => {
+  // ============================
+  // CREATE REPORT
+  // ============================
+  const addReport = async (
+    reportData: Omit<Incident, "id" | "createdOn">
+  ): Promise<number> => {
     try {
-      const response = await axiosInstance.post("/", reportData);
-      setReports((prev) => [...prev, response.data]);
-      return response.data.id;
+      const response = await axiosInstance.post("/", {
+        ...reportData,
+        createdBy: user?.id,
+      });
+
+      const newReport: Incident = response.data.data;
+
+      // Add full backend response
+      setReports((prev) => [...prev, newReport]);
+
+      return newReport.id;
     } catch (err) {
-      console.error("Error adding report:", err);
+      console.error("Error creating report", err);
       return -1;
     }
   };
 
-  // Update a report
-  const updateReport = async (id: number, updates: Partial<Incident>) => {
+  // ============================
+  // UPDATE REPORT
+  // ============================
+  const updateReport = async (
+    id: number,
+    updates: Partial<Incident>
+  ): Promise<boolean> => {
     try {
-      const response = await axiosInstance.put(`/${id}`, updates);
-      setReports((prev) => prev.map((r) => (r.id === id ? response.data : r)));
+      // Update in backend
+      await axiosInstance.put(`/${id}`, updates);
+
+      // Fetch updated report
+      const updated = await axiosInstance.get(`/${id}`);
+      const updatedReport: Incident = updated.data.data;
+
+      setReports((prev) => prev.map((r) => (r.id === id ? updatedReport : r)));
+
       return true;
     } catch (err) {
-      console.error("Error updating report:", err);
+      console.error("Error updating report", err);
       return false;
     }
   };
 
-  // Delete a report
-  const deleteReport = async (id: number) => {
+  // ============================
+  // DELETE REPORT
+  // ============================
+  const deleteReport = async (id: number): Promise<boolean> => {
     try {
       await axiosInstance.delete(`/${id}`);
       setReports((prev) => prev.filter((r) => r.id !== id));
       return true;
     } catch (err) {
-      console.error("Error deleting report:", err);
+      console.error("Error deleting report", err);
       return false;
     }
   };
 
+  // ============================
+  // GETTERS
+  // ============================
   const getReport = (id: number) => reports.find((r) => r.id === id);
 
   const getUserReports = (userId: number) =>
@@ -105,6 +133,7 @@ export const ReportProvider: React.FC<Props> = ({ children }) => {
 
   const value: ReportContextType = {
     reports,
+    loading,
     addReport,
     updateReport,
     deleteReport,

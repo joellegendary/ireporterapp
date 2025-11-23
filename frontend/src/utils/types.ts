@@ -93,6 +93,6 @@ export interface ReportContextType {
   getUserReports: (userId: number) => Incident[];
 
   getAllReports: () => Incident[];
-
+  loading?: boolean;
   debugReports?: () => void;
 }

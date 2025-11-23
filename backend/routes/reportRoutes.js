@@ -1,10 +1,18 @@
 import express from "express";
-import { getAllReports, createReport } from "../controllers/reportController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+import {
+    createReport,
+    getAllReports,
+    getReportById,
+    updateReport,
+    deleteReport,
+} from "../controllers/reportController.js";
 
 const router = express.Router();
 
-router.get("/", authMiddleware, getAllReports);
-router.post("/", authMiddleware, createReport);
+router.post("/", createReport);
+router.get("/", getAllReports);
+router.get("/:id", getReportById);
+router.put("/:id", updateReport);
+router.delete("/:id", deleteReport);
 
 export default router;

@@ -34,6 +34,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Auto-save draft only when creating
   useEffect(() => {
     if (
       !isEditing &&
@@ -47,6 +48,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
     }
   }, [formData, isEditing]);
 
+  // Load draft if exists
   useEffect(() => {
     if (!isEditing) {
       const savedDraft = localStorage.getItem("ireporter_draft");
@@ -61,7 +63,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
           if (hoursDiff < 1) {
             if (
               confirm(
-                "You have a recently saved draft. Would you like to continue where you left off?"
+                "You have a recently saved draft. Continue where you left off?"
               )
             ) {
               setFormData(draft);
@@ -74,6 +76,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
     }
   }, [isEditing]);
 
+  // Load editing data
   useEffect(() => {
     if (!isEditing) {
       const searchParams = new URLSearchParams(location.search);
@@ -156,7 +159,6 @@ const ReportForm: React.FC<ReportFormProps> = ({
     const files = e.target.files;
     if (!files) return;
 
-    // No size limits - only validate file types
     const validFiles = Array.from(files).filter((file) => {
       if (mediaType === "images") {
         const validTypes = [
@@ -180,9 +182,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
     });
 
     if (validFiles.length !== files.length) {
-      alert(
-        `Some files were skipped. Please ensure you're uploading supported file types.`
-      );
+      alert(`Some files were skipped. Unsupported formats were removed.`);
     }
 
     const newMedia = validFiles.map((file) => URL.createObjectURL(file));
@@ -222,6 +222,9 @@ const ReportForm: React.FC<ReportFormProps> = ({
     }
   };
 
+  // -------------------------------------------------------
+  // ✅ FIXED: Only show success after backend has saved
+  // -------------------------------------------------------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -233,7 +236,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
       const locationString = `${formData.latitude},${formData.longitude}`;
 
       if (isEditing && report) {
-        const success = updateReport(report.id, {
+        const success = await updateReport(report.id, {
           type: formData.type,
           title: formData.title,
           location: locationString,
@@ -242,15 +245,14 @@ const ReportForm: React.FC<ReportFormProps> = ({
           videos: formData.videos,
         });
 
-        // FIX: Add await before the promise
-        if (await success) {
+        if (success) {
           alert("✅ Report updated successfully!");
           navigate("/dashboard");
         } else {
-          alert("❌ Failed to update report. Please try again.");
+          alert("❌ Failed to update report.");
         }
       } else {
-        const newReportId = addReport({
+        const newId = await addReport({
           type: formData.type,
           title: formData.title,
           location: locationString,
@@ -261,13 +263,12 @@ const ReportForm: React.FC<ReportFormProps> = ({
           status: "draft",
         });
 
-        // FIX: Add await before the promise
-        if (await newReportId) {
+        if (typeof newId === "number" && newId > 0) {
           localStorage.removeItem("ireporter_draft");
           alert("✅ Report created successfully!");
           navigate("/dashboard");
         } else {
-          alert("❌ Failed to create report. Please try again.");
+          alert("❌ Failed to create report.");
         }
       }
     } catch (error) {
@@ -324,6 +325,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
       </div>
 
       <form onSubmit={handleSubmit}>
+        {/* --- Report Type --- */}
         <div className="form-group">
           <label className="form-label">Report Type *</label>
           <div className="type-selector">
@@ -363,6 +365,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
           </div>
         </div>
 
+        {/* ---- Title ---- */}
         <div className="form-grid">
           <div className="form-group form-full-width">
             <label className="form-label">Report Title *</label>
@@ -383,6 +386,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
             </div>
           </div>
 
+          {/* ---- Description ---- */}
           <div className="form-group form-full-width">
             <label className="form-label">Description *</label>
             <textarea
@@ -403,6 +407,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
           </div>
         </div>
 
+        {/* ---- Location ---- */}
         <div className="form-group form-full-width">
           <label className="form-label">Location *</label>
           <MapPicker
@@ -420,6 +425,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
           )}
         </div>
 
+        {/* ---- Images ---- */}
         <div className="form-group form-full-width">
           <label className="form-label">Supporting Images (Optional)</label>
           <label className="media-upload">
@@ -470,6 +476,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
           )}
         </div>
 
+        {/* ---- Videos ---- */}
         <div className="form-group form-full-width">
           <label className="form-label">Supporting Videos (Optional)</label>
           <label className="media-upload">
@@ -520,6 +527,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
           )}
         </div>
 
+        {/* ---- Actions ---- */}
         <div className="form-actions">
           <button
             type="button"
