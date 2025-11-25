@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react'; // Added useEffect for initial form data
-import { useAuth } from '../../context/AuthContext';
-import { useReports } from '../../context/ReportContext';
-import Sidebar from '../../components/Sidebar/Sidebar';
-import Header from '../../components/Header/Header';
-import './Profile.css';
+import React, { useState, useEffect } from "react"; // Added useEffect for initial form data
+import { useAuth } from "../../context/AuthContext";
+import { useReports } from "../../context/ReportContext";
+import Sidebar from "../../components/Sidebar/Sidebar";
+import Header from "../../components/Header/Header";
+import "./Profile.css";
 
 const Profile: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
   const { user } = useAuth();
@@ -17,76 +17,75 @@ const Profile: React.FC = () => {
   const userReports = getUserReports(user?.id || 0);
 
   const [formData, setFormData] = useState({
-    firstname: user?.firstname || '',
-    lastname: user?.lastname || '',
-    othernames: user?.othernames || '',
-    email: user?.email || '',
-    phoneNumber: user?.phoneNumber || '',
-    username: user?.username || '',
+    firstname: user?.firstname || "",
+    lastname: user?.lastname || "",
+    othernames: user?.othernames || "",
+    email: user?.email || "",
+    phoneNumber: user?.phoneNumber || "",
+    username: user?.username || "",
   });
 
   // Effect to update form data if user prop changes (e.g., after initial load or profile update)
   useEffect(() => {
     setFormData({
-      firstname: user?.firstname || '',
-      lastname: user?.lastname || '',
-      othernames: user?.othernames || '',
-      email: user?.email || '',
-      phoneNumber: user?.phoneNumber || '',
-      username: user?.username || '',
+      firstname: user?.firstname || "",
+      lastname: user?.lastname || "",
+      othernames: user?.othernames || "",
+      email: user?.email || "",
+      phoneNumber: user?.phoneNumber || "",
+      username: user?.username || "",
     });
   }, [user]); // Re-run when user object changes
 
-
   const stats = {
     totalReports: userReports.length,
-    redFlags: userReports.filter(r => r.type === 'red-flag').length,
-    interventions: userReports.filter(r => r.type === 'intervention').length,
-    resolved: userReports.filter(r => r.status === 'resolved').length,
-    pending: userReports.filter(r =>
-      r.status === 'draft' || r.status === 'under investigation'
+    redFlags: userReports.filter((r) => r.type === "red-flag").length,
+    interventions: userReports.filter((r) => r.type === "intervention").length,
+    resolved: userReports.filter((r) => r.status === "resolved").length,
+    pending: userReports.filter(
+      (r) => r.status === "draft" || r.status === "under-investigation"
     ).length,
-    rejected: userReports.filter(r => r.status === 'rejected').length,
+    rejected: userReports.filter((r) => r.status === "rejected").length,
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
   const handleSave = () => {
     // In a real app, this would update the user profile via API
-    console.log('Save profile:', formData);
+    console.log("Save profile:", formData);
     // You would typically call an update function from your AuthContext here
     // For example: updateUserProfile(formData);
     setIsEditing(false);
-    alert('Profile updated successfully!');
+    alert("Profile updated successfully!");
   };
 
   const handleCancel = () => {
     // Reset to current user data
     setFormData({
-      firstname: user?.firstname || '',
-      lastname: user?.lastname || '',
-      othernames: user?.othernames || '',
-      email: user?.email || '',
-      phoneNumber: user?.phoneNumber || '',
-      username: user?.username || '',
+      firstname: user?.firstname || "",
+      lastname: user?.lastname || "",
+      othernames: user?.othernames || "",
+      email: user?.email || "",
+      phoneNumber: user?.phoneNumber || "",
+      username: user?.username || "",
     });
     setIsEditing(false);
   };
 
   const getInitials = () => {
-    const first = user?.firstname?.charAt(0) || '';
-    const last = user?.lastname?.charAt(0) || '';
+    const first = user?.firstname?.charAt(0) || "";
+    const last = user?.lastname?.charAt(0) || "";
     return `${first}${last}`.toUpperCase();
   };
 
   const getFullName = () => {
-    const first = user?.firstname || '';
-    const last = user?.lastname || '';
+    const first = user?.firstname || "";
+    const last = user?.lastname || "";
     return `${first} ${last}`.trim();
   };
 
@@ -111,7 +110,7 @@ const Profile: React.FC = () => {
         onMobileClose={handleMobileClose}
       />
 
-      <div className={`profile-main ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+      <div className={`profile-main ${isSidebarCollapsed ? "collapsed" : ""}`}>
         <Header
           title="Profile"
           onMenuToggle={handleMobileMenuToggle}
@@ -130,17 +129,19 @@ const Profile: React.FC = () => {
           <div className="profile-grid">
             {/* Sidebar */}
             <div className="profile-sidebar">
-              <div className="profile-avatar-card"> {/* Renamed for clarity, using card styles */}
-                <div className="avatar-image">
-                  {getInitials()}
-                </div>
+              <div className="profile-avatar-card">
+                {" "}
+                {/* Renamed for clarity, using card styles */}
+                <div className="avatar-image">{getInitials()}</div>
                 <div className="avatar-name">{getFullName()}</div>
-                <div className={`avatar-role ${user?.isAdmin ? 'admin' : ''}`}>
-                  {user?.isAdmin ? 'Administrator' : 'User'}
+                <div className={`avatar-role ${user?.isAdmin ? "admin" : ""}`}>
+                  {user?.isAdmin ? "Administrator" : "User"}
                 </div>
               </div>
 
-              <div className="profile-stats-card"> {/* Renamed for clarity, using card styles */}
+              <div className="profile-stats-card">
+                {" "}
+                {/* Renamed for clarity, using card styles */}
                 <h3 className="stats-title">Reporting Statistics</h3>
                 <div className="stats-list">
                   <div className="stat-item">
@@ -172,7 +173,9 @@ const Profile: React.FC = () => {
             </div>
 
             {/* Main Form */}
-            <div className="profile-form-card"> {/* Renamed for clarity, using card styles */}
+            <div className="profile-form-card">
+              {" "}
+              {/* Renamed for clarity, using card styles */}
               <div className="form-section">
                 <h3 className="form-section-title">Personal Information</h3>
 
@@ -227,7 +230,6 @@ const Profile: React.FC = () => {
                   />
                 </div>
               </div>
-
               <div className="form-section">
                 <h3 className="form-section-title">Contact Information</h3>
 
@@ -255,7 +257,6 @@ const Profile: React.FC = () => {
                   />
                 </div>
               </div>
-
               <div className="form-actions">
                 {!isEditing ? (
                   <button
@@ -272,10 +273,7 @@ const Profile: React.FC = () => {
                     >
                       Cancel
                     </button>
-                    <button
-                      className="btn btn-primary"
-                      onClick={handleSave}
-                    >
+                    <button className="btn btn-primary" onClick={handleSave}>
                       Save Changes
                     </button>
                   </>

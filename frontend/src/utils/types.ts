@@ -10,7 +10,7 @@ export interface User {
   email: string;
   phoneNumber: string;
   isAdmin: boolean;
-  registered: string; // ISO string date
+  registered: string; // ISO date
 }
 
 // =========================
@@ -28,10 +28,10 @@ export interface Incident {
     | "under-investigation"
     | "resolved"
     | "rejected";
-  location: string; // "lat, lng" or map string
+  location: string;
   images: string[];
   videos: string[];
-  createdOn: string; // ISO string date
+  createdOn: string; // ISO date
   updatedOn?: string;
 }
 
@@ -55,7 +55,9 @@ export interface ReportContextType {
   loading?: boolean;
   error?: string | null;
 
+  // FIXED: Now matches your ReportProvider's signature
   addReport: (report: Omit<Incident, "id" | "createdOn">) => Promise<number>;
+
   updateReport: (id: number, updates: Partial<Incident>) => Promise<boolean>;
   deleteReport: (id: number) => Promise<boolean>;
 

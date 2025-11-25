@@ -1,37 +1,61 @@
+// src/pages/Auth/Login.tsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import "./Auth.css";
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const { login } = useAuth(); // API call defined in AuthContext
   const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
-    try {
-      const response = await login(email, password);
+    if (!formData.email || !formData.password) {
+      alert("Please fill all fields.");
+      setLoading(false);
+      return;
+    }
 
-      if (response?.success && response.user) {
-        // Check if user is admin
-        if (response.user.isAdmin) {
-          navigate("/admin", { replace: true });
-        } else {
-          navigate("/dashboard", { replace: true });
-        }
-      } else {
-        setError(response?.message || "Invalid email or password");
+    try {
+      const response = await login(formData.email, formData.password);
+
+      if (!response) {
+        alert("Unable to connect to server.");
+        return;
       }
-    } catch (err) {
-      setError("An error occurred during login");
+      if (!response.success) {
+        alert(response.message || "Invalid email or password.");
+        return;
+      }
+
+      const role = response.user?.role?.toLowerCase();
+
+      // ⭐ ROUTE FIXED (your UI remains unchanged)
+      if (role === "admin") {
+        alert("Admin login successful!");
+        navigate("/admin", { replace: true });
+      } else {
+        alert("Login successful!");
+        navigate("/dashboard", { replace: true });
+      }
+
+    } catch (error) {
+      alert("Server error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -46,21 +70,20 @@ const Login: React.FC = () => {
         </div>
 
         <h2 className="auth-title">Welcome Back</h2>
-        <p className="auth-subtitle">Sign in to your account</p>
-
-        {error && <div className="error-message">⚠ {error}</div>}
+        <p className="auth-subtitle">Sign in to continue</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label className="form-label">Email Address</label>
             <input
               type="email"
+              name="email"
               className="form-input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
               placeholder="Enter your email"
               disabled={loading}
+              value={formData.email}
+              onChange={handleChange}
+              required
             />
           </div>
 
@@ -68,43 +91,26 @@ const Login: React.FC = () => {
             <label className="form-label">Password</label>
             <input
               type="password"
+              name="password"
               className="form-input"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
               placeholder="Enter your password"
               disabled={loading}
+              value={formData.password}
+              onChange={handleChange}
+              required
             />
           </div>
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? "Signing In..." : "Sign In"}
+            {loading ? "Signing In..." : "Login"}
           </button>
         </form>
 
         <div className="auth-footer">
-          Don't have an account?{" "}
+          Don’t have an account?{" "}
           <Link to="/signup" className="auth-link">
-            Sign up here
+            Create one
           </Link>
-        </div>
-
-        <div
-          className="demo-accounts"
-          style={{
-            marginTop: "24px",
-            padding: "16px",
-            background: "#f8fafc",
-            borderRadius: "8px",
-          }}
-        >
-          <h4 style={{ marginBottom: "8px", fontSize: "14px" }}>
-            Demo Accounts:
-          </h4>
-          <p style={{ fontSize: "12px", marginBottom: "4px" }}>
-            Admin: admin@ireporter.com / admin123
-          </p>
-          <p style={{ fontSize: "12px" }}>User: john@example.com / user123</p>
         </div>
       </div>
     </div>

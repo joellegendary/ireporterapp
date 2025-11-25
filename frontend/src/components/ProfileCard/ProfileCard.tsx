@@ -10,16 +10,22 @@ interface ProfileCardProps {
 const ProfileCard: React.FC<ProfileCardProps> = ({ user }) => {
   const { reports } = useReports();
 
-  const userReports = reports.filter(r => r.createdBy === user?.id);
-  const redFlags = userReports.filter(r => r.type === "red-flag").length;
-  const interventions = userReports.filter(r => r.type === "intervention").length;
-  const resolved = userReports.filter(r => r.status === "resolved").length;
-  const pending = userReports.filter(r => r.status === "under investigation").length;
-  const rejected = userReports.filter(r => r.status === "rejected").length;
+  const userReports = reports.filter((r) => r.createdBy === user?.id);
+  const redFlags = userReports.filter((r) => r.type === "red-flag").length;
+  const interventions = userReports.filter(
+    (r) => r.type === "intervention"
+  ).length;
+  const resolved = userReports.filter((r) => r.status === "resolved").length;
+  const pending = userReports.filter(
+    (r) => r.status === "under-investigation"
+  ).length;
+  const rejected = userReports.filter((r) => r.status === "rejected").length;
 
   return (
     <div className="profile-card">
-      <h2>{user?.firstname} {user?.lastname}</h2>
+      <h2>
+        {user?.firstname} {user?.lastname}
+      </h2>
       <p>Email: {user?.email}</p>
       <div className="stats">
         <span>Total Reports: {userReports.length}</span>

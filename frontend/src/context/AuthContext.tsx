@@ -1,3 +1,4 @@
+// src/context/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 
@@ -8,21 +9,9 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   isAuthenticated: boolean;
-  login: (
-    email: string,
-    password: string
-  ) => Promise<{
-    success: boolean;
-    message: string;
-    user?: any;
-    token?: string;
-  }>;
-  signup: (userData: any) => Promise<{
-    success: boolean;
-    message: string;
-    user?: any;
-    token?: string;
-  }>;
+  isAdmin: boolean;
+  login: (email: string, password: string) => Promise<any>;
+  signup: (userData: any) => Promise<any>;
   logout: () => void;
 }
 
@@ -39,7 +28,7 @@ export const AuthProvider = ({ children }: any) => {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load stored session
+  // Restore session
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     const savedToken = localStorage.getItem("token");
@@ -47,6 +36,7 @@ export const AuthProvider = ({ children }: any) => {
     if (savedUser && savedToken) {
       setUser(JSON.parse(savedUser));
       setToken(savedToken);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
     }
 
     setLoading(false);
@@ -55,25 +45,22 @@ export const AuthProvider = ({ children }: any) => {
   // LOGIN
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post(`${API_URL}/login`, {
-        email,
-        password,
-      });
+      const res = await axios.post(`${API_URL}/login`, { email, password });
 
-      const { user, token, message } = response.data;
+      const { user, token, success, message } = res.data;
 
+      if (!success) return { success: false, message };
+
+      // IMPORTANT: Ensure user.role exists
       setUser(user);
       setToken(token);
 
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("token", token);
 
-      return {
-        success: true,
-        message,
-        user,
-        token,
-      };
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      return { success: true, user, token };
     } catch (err: any) {
       return {
         success: false,
@@ -85,22 +72,8 @@ export const AuthProvider = ({ children }: any) => {
   // SIGNUP
   const signup = async (userData: any) => {
     try {
-      const response = await axios.post(`${API_URL}/signup`, userData);
-
-      const { user, token, message } = response.data;
-
-      setUser(user);
-      setToken(token);
-
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", token);
-
-      return {
-        success: true,
-        message,
-        user,
-        token,
-      };
+      const res = await axios.post(`${API_URL}/signup`, userData);
+      return res.data;
     } catch (err: any) {
       return {
         success: false,
@@ -109,11 +82,15 @@ export const AuthProvider = ({ children }: any) => {
     }
   };
 
+  // LOGOUT
   const logout = () => {
-    setToken(null);
     setUser(null);
-    localStorage.removeItem("token");
+    setToken(null);
+
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+
+    delete axios.defaults.headers.common["Authorization"];
   };
 
   return (
@@ -123,6 +100,7 @@ export const AuthProvider = ({ children }: any) => {
         token,
         loading,
         isAuthenticated: !!user,
+        isAdmin: user?.role === "admin", // FIXED HERE
         login,
         signup,
         logout,

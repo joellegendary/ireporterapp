@@ -1,11 +1,15 @@
+// backend/routes/authRoutes.js
 import express from "express";
-import { registerController, loginController, getProfileController } from "../controllers/authController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+import { login, signup } from "../controllers/authController.js";
+import { authMiddleware, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/signup", registerController);
-router.post("/login", loginController);
-router.get("/profile", authMiddleware, getProfileController);
+router.post("/signup", signup);
+router.post("/login", login);
+
+router.get("/admin-test", authMiddleware, adminOnly, (req, res) => {
+    res.json({ message: "You are an admin" });
+});
 
 export default router;

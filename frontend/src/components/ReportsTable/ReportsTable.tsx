@@ -26,7 +26,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
 
   const getStatusOptions = (current: string) => {
     const options = [
-      { value: "under investigation", label: "Under Investigation" },
+      { value: "under-investigation", label: "Under Investigation" },
       { value: "resolved", label: "Resolved" },
       { value: "rejected", label: "Rejected" },
     ];

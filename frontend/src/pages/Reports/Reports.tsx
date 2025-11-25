@@ -181,7 +181,7 @@ ${videos.length > 0 ? `🎥 Videos: ${videos.length} attached` : ""}
               >
                 <option value="all">All</option>
                 <option value="draft">Draft</option>
-                <option value="under investigation">Under Investigation</option>
+                <option value="under-investigation">Under Investigation</option>
                 <option value="resolved">Resolved</option>
                 <option value="rejected">Rejected</option>
               </select>

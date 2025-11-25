@@ -1,64 +1,91 @@
-import { createUser, findUserByEmail } from "../models/userModel.js";
+// backend/controllers/authController.js
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import {
+    findUserByEmail,
+    createUser,
+    getUserById
+} from "../models/userModel.js";
 
-export const registerController = async (req, res) => {
+// =====================
+// SIGNUP
+// =====================
+export const signup = async (req, res) => {
     try {
-        const { firstname, lastname, othernames, email, phoneNumber, username, password } = req.body;
+        const { firstname, lastname, othernames, email, phone, username, password } = req.body;
 
-        // Check if user exists
+        // check if user exists
         const existingUser = await findUserByEmail(email);
-        if (existingUser) return res.status(400).json({ message: "User already exists" });
+        if (existingUser) {
+            return res.status(400).json({ success: false, message: "User already exists" });
+        }
 
-        // Hash password
+        // hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create user
-        const user = await createUser({
+        // create user
+        const newUser = await createUser({
             firstname,
             lastname,
             othernames,
             email,
-            phoneNumber,
+            phone,
             username,
             password: hashedPassword,
-            role: "user",
-            isActive: 1,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            role: "user"
         });
 
-        // Generate JWT
-        const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
+        return res.status(201).json({
+            success: true,
+            message: "Signup successful",
+            user: newUser
+        });
 
-        res.status(201).json({ user, token });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: error.message });
+        console.error("Signup Error:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
     }
 };
 
-export const loginController = async (req, res) => {
+// =====================
+// LOGIN
+// =====================
+export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
+
+        // check user by email
         const user = await findUserByEmail(email);
-        if (!user) return res.status(400).json({ message: "Invalid credentials" });
+        if (!user) {
+            return res.status(400).json({ success: false, message: "Invalid email or password" });
+        }
 
+        // compare passwords
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: "Invalid email or password" });
+        }
 
-        const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
-        res.json({ user, token });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: error.message });
-    }
-};
+        // generate token
+        const token = jwt.sign(
+            {
+                id: user.id,
+                email: user.email,
+                role: user.role
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
 
-export const getProfileController = async (req, res) => {
-    try {
-        res.json(req.user);
+        return res.status(200).json({
+            success: true,
+            message: "Login successful",
+            token,
+            user
+        });
+
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error("Login Error:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
     }
 };

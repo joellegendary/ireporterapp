@@ -1,21 +1,25 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+// src/components/ProtectedRoute.tsx
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  adminOnly?: boolean;
+  requiredRole?: string;   // ✅ FIX: Added
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = false }) => {
-  const { isAuthenticated, user } = useAuth();
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
+  const { user, loading } = useAuth();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
+  // Still loading? Don't redirect yet.
+  if (loading) return <div>Loading...</div>;
 
-  if (adminOnly && !user?.isAdmin) {
-    return <Navigate to="/dashboard" replace />;
+  // Not logged in AT ALL → go to login
+  if (!user) return <Navigate to="/login" replace />;
+
+  // If this route requires a role, and user doesn't match → redirect
+  if (requiredRole && user.role.toLowerCase() !== requiredRole.toLowerCase()) {
+    return <Navigate to="/dashboard" replace />; // default user page
   }
 
   return <>{children}</>;
