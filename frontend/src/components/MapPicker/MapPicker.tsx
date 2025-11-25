@@ -1,149 +1,94 @@
-// MapPicker/MapPicker.tsx
-import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import './MapPicker.css';
+import React, { useEffect, useRef, useState } from "react";
+import L from "leaflet";
 
-// Fix for default markers in leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+// Fix marker icons for localhost (important!)
+import iconRetina from "leaflet/dist/images/marker-icon-2x.png";
+import icon from "leaflet/dist/images/marker-icon.png";
+import shadow from "leaflet/dist/images/marker-shadow.png";
+
+const DefaultIcon = L.icon({
+  iconRetinaUrl: iconRetina,
+  iconUrl: icon,
+  shadowUrl: shadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
 });
-
-// Component to center map on user's location
-function CenterMap({ location }: { location: { lat: number; lng: number } }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    map.setView([location.lat, location.lng], 13);
-  }, [location, map]);
-  
-  return null;
-}
+L.Marker.prototype.options.icon = DefaultIcon;
 
 interface MapPickerProps {
-  onLocationSelect: (lat: number, lng: number) => void;
+  onSelect?: (coords: { lat: number; lng: number }) => void;
 }
 
-const MapPicker: React.FC<MapPickerProps> = ({ onLocationSelect }) => {
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const MapPicker: React.FC<MapPickerProps> = ({ onSelect }) => {
+  const mapRef = useRef<HTMLDivElement | null>(null);
+  const mapInstance = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
-  // Get user's current location
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
+    null
+  );
+
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setError("Your browser doesn't support geolocation");
-      setIsLoading(false);
-      return;
-    }
+    if (!mapRef.current || mapInstance.current) return;
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const location = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        };
-        
-        setUserLocation(location);
-        onLocationSelect(location.lat, location.lng);
-        setIsLoading(false);
-      },
-      (error) => {
-        console.error('Error getting location:', error);
-        let errorMessage = "Couldn't get your location. ";
-        
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage += "Please allow location access.";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage += "Location unavailable.";
-            break;
-          case error.TIMEOUT:
-            errorMessage += "Location request timed out.";
-            break;
-          default:
-            errorMessage += "Unknown error.";
-            break;
-        }
-        
-        setError(errorMessage);
-        setIsLoading(false);
-        
-        // Fallback to a default location (center of the world)
-        const defaultLocation = { lat: 20, lng: 0 };
-        setUserLocation(defaultLocation);
-        onLocationSelect(defaultLocation.lat, defaultLocation.lng);
-      },
-      {
-        enableHighAccuracy: false, // Keep it simple, no need for high accuracy
-        timeout: 10000,
-        maximumAge: 300000, // 5 minutes
+    // Stable map center (Kampala, Uganda)
+    const map = L.map(mapRef.current).setView([0.3476, 32.5825], 13);
+    mapInstance.current = map;
+
+    // Reliable OpenStreetMap server - best for localhost
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "© OpenStreetMap Contributors",
+    }).addTo(map);
+
+    // Click to place marker
+    map.on("click", (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+      setCoords({ lat, lng });
+
+      if (!markerRef.current) {
+        markerRef.current = L.marker([lat, lng], { draggable: true }).addTo(
+          map
+        );
+
+        markerRef.current.on("dragend", () => {
+          const pos = markerRef.current!.getLatLng();
+          setCoords({ lat: pos.lat, lng: pos.lng });
+          onSelect?.({ lat: pos.lat, lng: pos.lng });
+        });
+      } else {
+        markerRef.current.setLatLng([lat, lng]);
       }
-    );
-  }, [onLocationSelect]);
 
-  if (isLoading) {
-    return (
-      <div className="map-container simple-map">
-        <div className="map-loading">
-          <div className="loading-spinner"></div>
-          <p>Finding your location...</p>
-        </div>
-      </div>
-    );
-  }
+      onSelect?.({ lat, lng });
+    });
+  }, []);
 
   return (
-    <div className="simple-map-container">
-      {error && (
-        <div className="map-error">
-          ⚠️ {error}
-        </div>
-      )}
-      
-      <div className="map-container simple-map">
-        <MapContainer
-          center={userLocation ? [userLocation.lat, userLocation.lng] : [20, 0]}
-          zoom={2}
-          style={{ height: '100%', width: '100%' }}
-          scrollWheelZoom={true}
-          worldCopyJump={true}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          
-          {userLocation && (
-            <>
-              <CenterMap location={userLocation} />
-              <Marker position={[userLocation.lat, userLocation.lng]}>
-                <Popup>
-                  <strong>You are here!</strong>
-                  <br />
-                  Latitude: {userLocation.lat.toFixed(4)}
-                  <br />
-                  Longitude: {userLocation.lng.toFixed(4)}
-                </Popup>
-              </Marker>
-            </>
-          )}
-        </MapContainer>
-      </div>
-      
-      {userLocation && (
-        <div className="location-info">
-          <span className="location-pin">📍</span>
-          <span>
-            Your location: {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+    <div>
+      <div
+        ref={mapRef}
+        style={{
+          width: "100%",
+          height: "380px",
+          borderRadius: "10px",
+          border: "1px solid #ccc",
+          overflow: "hidden",
+        }}
+      ></div>
+
+      <div style={{ marginTop: "10px", fontSize: "14px" }}>
+        {coords ? (
+          <>
+            <strong>Lat:</strong> {coords.lat.toFixed(6)} &nbsp;
+            <strong>Lng:</strong> {coords.lng.toFixed(6)}
+          </>
+        ) : (
+          <span style={{ color: "#888" }}>
+            Click on the map to select location
           </span>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

@@ -34,6 +34,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [usingLocation, setUsingLocation] = useState(false);
 
+  // Load report into form when editing
   useEffect(() => {
     if (isEditing && report) {
       setFormData({
@@ -47,18 +48,24 @@ const ReportForm: React.FC<ReportFormProps> = ({
     }
   }, [isEditing, report]);
 
+  // ================================
+  // Validation
+  // ================================
   const validateField = (name: string, value: string) => {
     if (name === "title") {
       if (!value.trim()) return "Title is required";
       if (value.length < 5) return "Title must be at least 5 characters";
     }
+
     if (name === "comment") {
       if (!value.trim()) return "Description is required";
       if (value.length < 10) return "Description must be at least 10 letters";
     }
+
     if (name === "location") {
       if (!value.trim()) return "Select location from the map";
     }
+
     return "";
   };
 
@@ -77,22 +84,29 @@ const ReportForm: React.FC<ReportFormProps> = ({
 
   const isFormValid = () => Object.keys(validateForm()).length === 0;
 
-  const handleChange = (e: any) => {
+  // ================================
+  // Input Handlers
+  // ================================
+  const handleChange = (e: React.ChangeEvent<any>) => {
     const { name, value } = e.target;
 
-    setFormData((f) => ({ ...f, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (touched[name]) {
       setErrors((err: any) => ({ ...err, [name]: validateField(name, value) }));
     }
   };
 
-  const handleBlur = (e: any) => {
+  const handleBlur = (e: React.FocusEvent<any>) => {
     const { name, value } = e.target;
+
     setTouched((t: any) => ({ ...t, [name]: true }));
     setErrors((err: any) => ({ ...err, [name]: validateField(name, value) }));
   };
 
+  // ================================
+  // Media Upload
+  // ================================
   const pickMedia = (type: "image" | "video") => {
     const input = document.createElement("input");
     input.type = "file";
@@ -103,11 +117,10 @@ const ReportForm: React.FC<ReportFormProps> = ({
       const files = Array.from(input.files || []);
       const limit = type === "image" ? 10 : 5;
 
-      if (
-        files.length +
-          (type === "image" ? formData.images.length : formData.videos.length) >
-        limit
-      ) {
+      const existing =
+        type === "image" ? formData.images.length : formData.videos.length;
+
+      if (files.length + existing > limit) {
         toast.error(`Maximum ${limit} ${type}s allowed`);
         return;
       }
@@ -129,32 +142,39 @@ const ReportForm: React.FC<ReportFormProps> = ({
   };
 
   const removeImage = (i: number) =>
-    setFormData((f) => ({
-      ...f,
-      images: f.images.filter((_, idx) => idx !== i),
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, idx) => idx !== i),
     }));
 
   const removeVideo = (i: number) =>
-    setFormData((f) => ({
-      ...f,
-      videos: f.videos.filter((_, idx) => idx !== i),
+    setFormData((prev) => ({
+      ...prev,
+      videos: prev.videos.filter((_, idx) => idx !== i),
     }));
 
-  const handleLocationSelect = (lat: number, lng: number) => {
-    setFormData((f) => ({
-      ...f,
-      location: `${lat.toFixed(6)},${lng.toFixed(6)}`,
+  // ================================
+  // Map Picker Location Handler
+  // ================================
+  const handleLocationSelect = (coords: { lat: number; lng: number }) => {
+    setFormData((prev) => ({
+      ...prev,
+      location: `${coords.lat.toFixed(6)},${coords.lng.toFixed(6)}`,
     }));
     setErrors((e: any) => ({ ...e, location: "" }));
   };
 
+  // ================================
+  // Get Current Device Location
+  // ================================
   const useCurrentLocation = () => {
     setUsingLocation(true);
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
-        setFormData((f) => ({ ...f, location: coords }));
+
+        setFormData((prev) => ({ ...prev, location: coords }));
         toast.success("Location set!");
         setUsingLocation(false);
       },
@@ -165,12 +185,16 @@ const ReportForm: React.FC<ReportFormProps> = ({
     );
   };
 
-  const handleSubmit = async (e: any) => {
+  // ================================
+  // Submit Handler
+  // ================================
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const v = validateForm();
-    setErrors(v);
-    if (Object.keys(v).length > 0) {
+    const validation = validateForm();
+    setErrors(validation);
+
+    if (Object.keys(validation).length > 0) {
       toast.error("Fix errors before submitting");
       return;
     }
@@ -198,6 +222,9 @@ const ReportForm: React.FC<ReportFormProps> = ({
     }
   };
 
+  // ================================
+  // UI (unchanged)
+  // ================================
   return (
     <div className="report-form-container">
       <form className="report-form" onSubmit={handleSubmit}>
@@ -206,6 +233,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
         </div>
 
         <div className="form-grid">
+          {/* Report Type */}
           <div className="form-group">
             <label className="form-label required">Report Type</label>
             <select
@@ -219,6 +247,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
             </select>
           </div>
 
+          {/* Title */}
           <div className="form-group">
             <label className="form-label required">Title</label>
             <input
@@ -235,6 +264,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
             )}
           </div>
 
+          {/* Description */}
           <div className="form-group full-width">
             <label className="form-label required">Description</label>
             <textarea
@@ -250,6 +280,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
             )}
           </div>
 
+          {/* Location */}
           <div className="form-group full-width">
             <label className="form-label required">Location</label>
 
@@ -264,7 +295,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
                 : "📍 Use Current Location"}
             </button>
 
-            <MapPicker onLocationSelect={handleLocationSelect} />
+            <MapPicker onSelect={handleLocationSelect} />
 
             {errors.location && touched.location && (
               <div className="error-text">{errors.location}</div>
@@ -275,6 +306,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
             )}
           </div>
 
+          {/* Media */}
           <div className="form-group full-width">
             <label className="form-label">Media Evidence</label>
 
@@ -324,6 +356,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
           </div>
         </div>
 
+        {/* Submit Button */}
         <div className="form-actions">
           <button
             type="submit"
@@ -344,4 +377,4 @@ const ReportForm: React.FC<ReportFormProps> = ({
   );
 };
 
-export default ReportForm ;
+export default ReportForm;
