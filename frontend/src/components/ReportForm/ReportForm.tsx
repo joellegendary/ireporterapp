@@ -33,6 +33,10 @@ const ReportForm: React.FC<ReportFormProps> = ({
   const [touched, setTouched] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [usingLocation, setUsingLocation] = useState(false);
+  const [mapCenter, setMapCenter] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   // Load report into form when editing
   useEffect(() => {
@@ -45,12 +49,20 @@ const ReportForm: React.FC<ReportFormProps> = ({
         images: report.images || [],
         videos: report.videos || [],
       });
+
+      // Set map center from existing report location
+      if (report.location) {
+        const [lat, lng] = report.location
+          .split(",")
+          .map((coord) => parseFloat(coord.trim()));
+        if (!isNaN(lat) && !isNaN(lng)) {
+          setMapCenter({ lat, lng });
+        }
+      }
     }
   }, [isEditing, report]);
 
-  // ================================
   // Validation
-  // ================================
   const validateField = (name: string, value: string) => {
     if (name === "title") {
       if (!value.trim()) return "Title is required";
@@ -84,9 +96,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
 
   const isFormValid = () => Object.keys(validateForm()).length === 0;
 
-  // ================================
   // Input Handlers
-  // ================================
   const handleChange = (e: React.ChangeEvent<any>) => {
     const { name, value } = e.target;
 
@@ -104,9 +114,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
     setErrors((err: any) => ({ ...err, [name]: validateField(name, value) }));
   };
 
-  // ================================
   // Media Upload
-  // ================================
   const pickMedia = (type: "image" | "video") => {
     const input = document.createElement("input");
     input.type = "file";
@@ -153,41 +161,42 @@ const ReportForm: React.FC<ReportFormProps> = ({
       videos: prev.videos.filter((_, idx) => idx !== i),
     }));
 
-  // ================================
   // Map Picker Location Handler
-  // ================================
   const handleLocationSelect = (coords: { lat: number; lng: number }) => {
+    const locationString = `${coords.lat.toFixed(6)},${coords.lng.toFixed(6)}`;
+
     setFormData((prev) => ({
       ...prev,
-      location: `${coords.lat.toFixed(6)},${coords.lng.toFixed(6)}`,
+      location: locationString,
     }));
+    setMapCenter(coords);
     setErrors((e: any) => ({ ...e, location: "" }));
   };
 
-  // ================================
-  // Get Current Device Location
-  // ================================
-  const useCurrentLocation = () => {
+  // Use Current Map Location
+  const useCurrentMapLocation = () => {
+    if (!mapCenter) {
+      toast.error("Please select a location on the map first");
+      return;
+    }
+
     setUsingLocation(true);
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const coords = `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
+    setTimeout(() => {
+      const locationString = `${mapCenter.lat.toFixed(6)},${mapCenter.lng.toFixed(6)}`;
 
-        setFormData((prev) => ({ ...prev, location: coords }));
-        toast.success("Location set!");
-        setUsingLocation(false);
-      },
-      () => {
-        toast.error("Unable to get your location");
-        setUsingLocation(false);
-      }
-    );
+      setFormData((prev) => ({
+        ...prev,
+        location: locationString,
+      }));
+
+      setErrors((e: any) => ({ ...e, location: "" }));
+      toast.success("Location set from map!");
+      setUsingLocation(false);
+    }, 500);
   };
 
-  // ================================
   // Submit Handler
-  // ================================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -222,9 +231,6 @@ const ReportForm: React.FC<ReportFormProps> = ({
     }
   };
 
-  // ================================
-  // UI (unchanged)
-  // ================================
   return (
     <div className="report-form-container">
       <form className="report-form" onSubmit={handleSubmit}>
@@ -284,16 +290,16 @@ const ReportForm: React.FC<ReportFormProps> = ({
           <div className="form-group full-width">
             <label className="form-label required">Location</label>
 
-            <button
-              type="button"
-              className="btn btn-outline location-btn"
-              onClick={useCurrentLocation}
-              disabled={usingLocation}
-            >
-              {usingLocation
-                ? "Getting location..."
-                : "📍 Use Current Location"}
-            </button>
+            <div className="location-buttons">
+              <button
+                type="button"
+                className="btn btn-outline location-btn"
+                onClick={useCurrentMapLocation}
+                disabled={usingLocation || !mapCenter}
+              >
+                {usingLocation ? "Setting location..." : "📍 Use Map Location"}
+              </button>
+            </div>
 
             <MapPicker onSelect={handleLocationSelect} />
 
@@ -332,7 +338,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
               <div className="media-grid">
                 {formData.images.map((img, i) => (
                   <div key={i} className="media-item">
-                    <img src={img} />
+                    <img src={img} alt={`Evidence ${i + 1}`} />
                     <button type="button" onClick={() => removeImage(i)}>
                       ×
                     </button>
