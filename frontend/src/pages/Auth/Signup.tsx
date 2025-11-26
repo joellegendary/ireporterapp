@@ -1,4 +1,3 @@
-// src/pages/Auth/Signup.tsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -9,38 +8,31 @@ const Signup: React.FC = () => {
   const { signup } = useAuth();
 
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
-    fullname: "",
+    firstname: "",
+    lastname: "",
+    othernames: "",
     email: "",
+    phone: "",
+    username: "",
     password: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    if (!formData.fullname || !formData.email || !formData.password) {
-      alert("All fields are required.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await signup({
-        fullname: formData.fullname,
-        email: formData.email,
-        password: formData.password,
-      });
+      const response = await signup(formData);
 
       if (!response || !response.success) {
         alert(response?.message || "Signup failed.");
+        setLoading(false);
         return;
       }
 
@@ -65,20 +57,51 @@ const Signup: React.FC = () => {
         <p className="auth-subtitle">Join the community</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
+          {/* FIRSTNAME */}
           <div className="form-group">
-            <label className="form-label">Full Name</label>
+            <label className="form-label">First Name</label>
             <input
               type="text"
-              name="fullname"
+              name="firstname"
               className="form-input"
-              placeholder="Your full name"
+              placeholder="Enter first name"
               disabled={loading}
-              value={formData.fullname}
+              value={formData.firstname}
               onChange={handleChange}
               required
             />
           </div>
 
+          {/* LASTNAME */}
+          <div className="form-group">
+            <label className="form-label">Last Name</label>
+            <input
+              type="text"
+              name="lastname"
+              className="form-input"
+              placeholder="Enter last name"
+              disabled={loading}
+              value={formData.lastname}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          {/* OTHER NAMES */}
+          <div className="form-group">
+            <label className="form-label">Other Names</label>
+            <input
+              type="text"
+              name="othernames"
+              className="form-input"
+              placeholder="Middle or other names"
+              disabled={loading}
+              value={formData.othernames}
+              onChange={handleChange}
+            />
+          </div>
+
+          {/* EMAIL */}
           <div className="form-group">
             <label className="form-label">Email Address</label>
             <input
@@ -93,6 +116,37 @@ const Signup: React.FC = () => {
             />
           </div>
 
+          {/* PHONE */}
+          <div className="form-group">
+            <label className="form-label">Phone Number</label>
+            <input
+              type="text"
+              name="phone"
+              className="form-input"
+              placeholder="Enter phone number"
+              disabled={loading}
+              value={formData.phone}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          {/* USERNAME */}
+          <div className="form-group">
+            <label className="form-label">Username</label>
+            <input
+              type="text"
+              name="username"
+              className="form-input"
+              placeholder="Choose a username"
+              disabled={loading}
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          {/* PASSWORD */}
           <div className="form-group">
             <label className="form-label">Password</label>
             <input

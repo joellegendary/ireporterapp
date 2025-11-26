@@ -62,6 +62,6 @@ Leaflet installation is required for this feature.
 ### 1️⃣ Clone Repository
 
 ```bash
-git clone https://github.com/<your-username>/ireporterapp.git
+git clone https://github.com/joellegendary/ireporterapp.git
 cd ireporterapp
 ```
