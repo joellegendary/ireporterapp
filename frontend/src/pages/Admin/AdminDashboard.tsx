@@ -2,22 +2,24 @@
 import React from "react";
 import { useReports } from "../../context/ReportContext";
 import { Incident } from "../../utils/types";
-import { useAuth } from "../../context/AuthContext"; // <-- added
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify"; // <-- added
 import "./AdminDashboard.css";
 
 const AdminDashboard: React.FC = () => {
   const { reports, loading, updateReport, deleteReport } = useReports();
-  const { logout, user } = useAuth(); // <-- added
+  const { logout, user } = useAuth();
 
   const handleStatusChange = async (
     id: number,
     newStatus: Incident["status"]
   ) => {
     const success = await updateReport(id, { status: newStatus });
+
     if (success) {
-      alert("Status updated successfully");
+      toast.success("Status updated successfully");
     } else {
-      alert("Failed to update status");
+      toast.error("Failed to update status");
     }
   };
 
@@ -28,10 +30,11 @@ const AdminDashboard: React.FC = () => {
     if (!confirmDelete) return;
 
     const success = await deleteReport(id);
+
     if (success) {
-      alert("Report deleted.");
+      toast.success("Report deleted.");
     } else {
-      alert("Failed to delete report.");
+      toast.error("Failed to delete report.");
     }
   };
 
@@ -41,9 +44,6 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="admin-dashboard">
-      {/* ---------------------- */}
-      {/* ADD LOGOUT BUTTON HERE */}
-      {/* ---------------------- */}
       <div className="admin-topbar">
         <span className="admin-user">Admin: {user?.username}</span>
         <button className="logout-btn" onClick={logout}>

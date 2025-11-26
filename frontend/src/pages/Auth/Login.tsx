@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import toast from "react-hot-toast";
 import "./Auth.css";
 
 const Login: React.FC = () => {
@@ -26,7 +27,7 @@ const Login: React.FC = () => {
     setLoading(true);
 
     if (!formData.email || !formData.password) {
-      alert("Please fill all fields.");
+      toast.error("Please fill all fields.");
       setLoading(false);
       return;
     }
@@ -35,27 +36,27 @@ const Login: React.FC = () => {
       const response = await login(formData.email, formData.password);
 
       if (!response) {
-        alert("Unable to connect to server.");
+        toast.error("Unable to connect to server.");
         return;
       }
+
       if (!response.success) {
-        alert(response.message || "Invalid email or password.");
+        toast.error(response.message || "Invalid email or password.");
         return;
       }
 
       const role = response.user?.role?.toLowerCase();
 
-      // ⭐ ROUTE FIXED (your UI remains unchanged)
+      // ⭐ No UI changes — just swapped alerts for toast
       if (role === "admin") {
-        alert("Admin login successful!");
+        toast.success("Admin login successful!");
         navigate("/admin", { replace: true });
       } else {
-        alert("Login successful!");
+        toast.success("Login successful!");
         navigate("/dashboard", { replace: true });
       }
-
     } catch (error) {
-      alert("Server error. Please try again.");
+      toast.error("Server error. Please try again.");
     } finally {
       setLoading(false);
     }

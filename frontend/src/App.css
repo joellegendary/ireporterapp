@@ -140,26 +140,18 @@ body {
   }
 }
 
-@keyframes slideIn {
-  from {
+@keyframes toastSlideIn {
+  0% {
     opacity: 0;
-    transform: translateX(40px) scale(0.95);
+    transform: translateX(25px) scale(0.95);
   }
 
-  to {
+  70% {
     opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-@keyframes slideOut {
-  from {
-    opacity: 1;
-    transform: translateX(0);
+    transform: translateX(0) scale(1.02);
   }
 
-  to {
-    opacity: 0;
-    transform: translateX(40px);
+  100% {
+    transform: scale(1);
   }
 }

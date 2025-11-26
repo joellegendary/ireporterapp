@@ -87,7 +87,7 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* PROFILE - Accessible to all authenticated users */}
+      {/* PROFILE */}
       <Route
         path="/profile"
         element={
@@ -97,7 +97,7 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* CREATE REPORT - Accessible to all authenticated users */}
+      {/* CREATE REPORT */}
       <Route
         path="/create-report"
         element={
@@ -107,7 +107,7 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* EDIT REPORT - Accessible to all authenticated users */}
+      {/* EDIT REPORT */}
       <Route
         path="/edit-report/:reportId"
         element={
@@ -117,7 +117,7 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* USER REPORTS - Accessible to all authenticated users */}
+      {/* USER REPORTS */}
       <Route
         path="/my-reports"
         element={
@@ -127,7 +127,7 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* ALL REPORTS - Consider if this should be admin only? */}
+      {/* ALL REPORTS */}
       <Route
         path="/reports"
         element={
@@ -153,73 +153,85 @@ const App: React.FC = () => {
         <ReportProvider>
           <div className="App">
             <Toaster
-              position="top-right"
+              position="top-center"
               gutter={12}
               toastOptions={{
-                duration: 2500,
+                duration: 3000,
                 style: {
-                  padding: "12px 16px",
-                  borderRadius: "14px",
-                  background: "rgba(255, 255, 255, 0.25)",
-                  backdropFilter: "blur(10px)",
-                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  padding: "10px 10px",
+                  borderRadius: "18px",
+                  background: "rgba(255, 255, 255, 0.18)",
+                  backdropFilter: "blur(12px)",
+                  border: "1px solid rgba(255, 255, 255, 0.22)",
                   color: "#1f2937",
-                  boxShadow: "0 5px 25px rgba(0,0,0,0.18)",
+                  boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
                   display: "flex",
                   alignItems: "center",
-                  gap: "10px",
-                  animation: "slideIn 0.35s ease-out",
+                  gap: "12px",
                 },
+
                 success: {
                   icon: (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <circle
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        fill="#10B981"
-                        opacity="0.9"
-                      />
-                      <path
-                        d="M8 12.5L10.5 15L16 9.5"
+                    <div
+                      style={{
+                        width: "26px",
+                        height: "26px",
+                        borderRadius: "50%",
+                        background: "rgba(16, 185, 129, 0.9)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
                         stroke="white"
-                        strokeWidth="2.2"
+                        strokeWidth="3"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                      />
-                    </svg>
+                      >
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                    </div>
                   ),
                   style: {
-                    background: "rgba(209, 250, 229, 0.35)",
+                    background: "rgba(209, 250, 229, 0.25)",
                     border: "1px solid rgba(16, 185, 129, 0.4)",
                   },
                 },
+
                 error: {
                   icon: (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <circle
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        fill="#EF4444"
-                        opacity="0.9"
-                      />
-                      <path
-                        d="M15 9L9 15"
+                    <div
+                      style={{
+                        width: "26px",
+                        height: "26px",
+                        borderRadius: "50%",
+                        background: "rgba(239, 68, 68, 0.9)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
                         stroke="white"
-                        strokeWidth="2.2"
+                        strokeWidth="3"
                         strokeLinecap="round"
-                      />
-                      <path
-                        d="M9 9L15 15"
-                        stroke="white"
-                        strokeWidth="2.2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
+                      >
+                        <path d="M18 6L6 18" />
+                        <path d="M6 6l12 12" />
+                      </svg>
+                    </div>
                   ),
                   style: {
-                    background: "rgba(254, 226, 226, 0.35)",
+                    background: "rgba(254, 226, 226, 0.25)",
                     border: "1px solid rgba(239, 68, 68, 0.4)",
                   },
                 },
