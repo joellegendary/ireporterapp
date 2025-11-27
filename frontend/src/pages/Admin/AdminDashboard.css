@@ -151,3 +151,61 @@
   font-size: 1.2rem;
   color: #475569;
 }
+
+/* Delete Confirmation Toast Styles */
+.delete-confirmation-toast {
+  padding: 10px;
+}
+
+.confirmation-message {
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  color: #333;
+  text-align: center;
+}
+
+.confirmation-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.confirm-delete-btn {
+  padding: 8px 16px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.confirm-delete-btn:hover {
+  background-color: #c82333;
+}
+
+.cancel-delete-btn {
+  padding: 8px 16px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.cancel-delete-btn:hover {
+  background-color: #5a6268;
+}
+
+/* Custom toast styling */
+.custom-toast {
+  min-height: auto;
+}
+
+/* Ensure toast container has proper z-index */
+.Toastify__toast-container {
+  z-index: 9999;
+}

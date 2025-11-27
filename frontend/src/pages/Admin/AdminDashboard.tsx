@@ -1,40 +1,57 @@
 // src/pages/Admin/AdminDashboard.tsx
-import React from "react";
+import React, { useState } from "react";
 import { useReports } from "../../context/ReportContext";
 import { Incident } from "../../utils/types";
 import { useAuth } from "../../context/AuthContext";
-import { toast } from "react-toastify"; // <-- added
+import { toast } from "react-toastify";
 import "./AdminDashboard.css";
 
 const AdminDashboard: React.FC = () => {
   const { reports, loading, updateReport, deleteReport } = useReports();
   const { logout, user } = useAuth();
+  const [processing, setProcessing] = useState(false);
 
   const handleStatusChange = async (
     id: number,
     newStatus: Incident["status"]
   ) => {
-    const success = await updateReport(id, { status: newStatus });
+    setProcessing(true);
 
-    if (success) {
-      toast.success("Status updated successfully");
-    } else {
-      toast.error("Failed to update status");
+    try {
+      const success = await updateReport(id, { status: newStatus });
+
+      if (success) {
+        toast.success("Status updated successfully");
+      } else {
+        toast.error("Failed to update status");
+      }
+    } catch (err) {
+      toast.error("Could not connect to server.");
+    } finally {
+      setProcessing(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this report?"
-    );
-    if (!confirmDelete) return;
+    // Show confirmation toast
+    if (!window.confirm("Are you sure you want to delete this report?")) {
+      return;
+    }
 
-    const success = await deleteReport(id);
+    setProcessing(true);
 
-    if (success) {
-      toast.success("Report deleted.");
-    } else {
-      toast.error("Failed to delete report.");
+    try {
+      const success = await deleteReport(id);
+
+      if (success) {
+        toast.success("Report deleted successfully");
+      } else {
+        toast.error("Failed to delete report");
+      }
+    } catch (err) {
+      toast.error("Could not connect to server.");
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -46,7 +63,7 @@ const AdminDashboard: React.FC = () => {
     <div className="admin-dashboard">
       <div className="admin-topbar">
         <span className="admin-user">Admin: {user?.username}</span>
-        <button className="logout-btn" onClick={logout}>
+        <button className="logout-btn" onClick={logout} disabled={processing}>
           Logout
         </button>
       </div>
@@ -89,6 +106,7 @@ const AdminDashboard: React.FC = () => {
                       )
                     }
                     className="status-dropdown"
+                    disabled={processing}
                   >
                     <option value="submitted">Submitted</option>
                     <option value="under-investigation">
@@ -101,8 +119,9 @@ const AdminDashboard: React.FC = () => {
                   <button
                     className="delete-btn"
                     onClick={() => handleDelete(report.id)}
+                    disabled={processing}
                   >
-                    Delete
+                    {processing ? "Deleting..." : "Delete"}
                   </button>
                 </td>
               </tr>
