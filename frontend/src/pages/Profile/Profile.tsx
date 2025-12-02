@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react"; // Added useEffect for initial form data
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useReports } from "../../context/ReportContext";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
+import toast from "react-hot-toast";
 import "./Profile.css";
 
 const Profile: React.FC = () => {
@@ -25,7 +26,7 @@ const Profile: React.FC = () => {
     username: user?.username || "",
   });
 
-  // Effect to update form data if user prop changes (e.g., after initial load or profile update)
+  // Sync form with user data on load or updates
   useEffect(() => {
     setFormData({
       firstname: user?.firstname || "",
@@ -35,7 +36,7 @@ const Profile: React.FC = () => {
       phoneNumber: user?.phoneNumber || "",
       username: user?.username || "",
     });
-  }, [user]); // Re-run when user object changes
+  }, [user]);
 
   const stats = {
     totalReports: userReports.length,
@@ -56,16 +57,16 @@ const Profile: React.FC = () => {
   };
 
   const handleSave = () => {
-    // In a real app, this would update the user profile via API
     console.log("Save profile:", formData);
-    // You would typically call an update function from your AuthContext here
-    // For example: updateUserProfile(formData);
+
+    // In real app: updateUserProfile(formData)
     setIsEditing(false);
-    alert("Profile updated successfully!");
+
+    // Toast instead of alert
+    toast.success("Profile updated successfully!");
   };
 
   const handleCancel = () => {
-    // Reset to current user data
     setFormData({
       firstname: user?.firstname || "",
       lastname: user?.lastname || "",
@@ -74,7 +75,11 @@ const Profile: React.FC = () => {
       phoneNumber: user?.phoneNumber || "",
       username: user?.username || "",
     });
+
     setIsEditing(false);
+
+    // Toast message
+    toast("Changes reverted");
   };
 
   const getInitials = () => {
@@ -130,8 +135,6 @@ const Profile: React.FC = () => {
             {/* Sidebar */}
             <div className="profile-sidebar">
               <div className="profile-avatar-card">
-                {" "}
-                {/* Renamed for clarity, using card styles */}
                 <div className="avatar-image">{getInitials()}</div>
                 <div className="avatar-name">{getFullName()}</div>
                 <div className={`avatar-role ${user?.isAdmin ? "admin" : ""}`}>
@@ -140,8 +143,6 @@ const Profile: React.FC = () => {
               </div>
 
               <div className="profile-stats-card">
-                {" "}
-                {/* Renamed for clarity, using card styles */}
                 <h3 className="stats-title">Reporting Statistics</h3>
                 <div className="stats-list">
                   <div className="stat-item">
@@ -174,8 +175,6 @@ const Profile: React.FC = () => {
 
             {/* Main Form */}
             <div className="profile-form-card">
-              {" "}
-              {/* Renamed for clarity, using card styles */}
               <div className="form-section">
                 <h3 className="form-section-title">Personal Information</h3>
 
@@ -230,6 +229,7 @@ const Profile: React.FC = () => {
                   />
                 </div>
               </div>
+
               <div className="form-section">
                 <h3 className="form-section-title">Contact Information</h3>
 
@@ -257,6 +257,7 @@ const Profile: React.FC = () => {
                   />
                 </div>
               </div>
+
               <div className="form-actions">
                 {!isEditing ? (
                   <button
